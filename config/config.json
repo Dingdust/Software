@@ -1,6 +1,6 @@
 {
     "API": {
-        "ApiKey": "",
+        "ApiKey": "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
         "BaseUrl": "https://apis.iflow.cn/v1",
         "ModelName": "qwen-max"
     },
@@ -11,6 +11,9 @@
             "PingFang SC"
         ],
         "ThemeColor": "#ff009faa",
-        "ThemeMode": "Light"
+        "ThemeMode": "Dark"
+    },
+    "UI": {
+        "Theme": "Auto"
     }
 }
