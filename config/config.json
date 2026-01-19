@@ -1,0 +1,16 @@
+{
+    "API": {
+        "ApiKey": "",
+        "BaseUrl": "https://apis.iflow.cn/v1",
+        "ModelName": "qwen-max"
+    },
+    "QFluentWidgets": {
+        "FontFamilies": [
+            "Segoe UI",
+            "Microsoft YaHei",
+            "PingFang SC"
+        ],
+        "ThemeColor": "#ff009faa",
+        "ThemeMode": "Light"
+    }
+}
