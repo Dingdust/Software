@@ -1,38 +1,24 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout
-from PyQt6.QtCore import Qt
-from qfluentwidgets import (ScrollArea, SettingCardGroup, SettingCard, LineEdit, PasswordLineEdit, 
-                            PrimaryPushButton, OptionsSettingCard, setTheme, Theme)
+
+from qfluentwidgets import setTheme
 from qfluentwidgets import FluentIcon as FIF
+from qfluentwidgets import ScrollArea, SettingCardGroup, SettingCard, LineEdit, PasswordLineEdit, OptionsSettingCard, HyperlinkCard
+
 from app.common.config import cfg
 
 class SettingInterface(ScrollArea):
+
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self.setObjectName("settingInterface")
         self.setWidgetResizable(True)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setObjectName("settingInterface")
         self.setStyleSheet("background-color: transparent;")
         
         self.scrollWidget = QWidget()
         self.vBoxLayout = QVBoxLayout(self.scrollWidget)
-        self.vBoxLayout.setContentsMargins(36, 36, 36, 36)
-        self.vBoxLayout.setSpacing(28)
+        self.vBoxLayout.setSpacing(20)
+        self.vBoxLayout.setContentsMargins(36, 20, 36, 20)
         self.setWidget(self.scrollWidget)
-        
-        # Personalization Group
-        self.personalGroup = SettingCardGroup("个性化", self.scrollWidget)
-        
-        self.themeCard = OptionsSettingCard(
-            cfg.theme,
-            FIF.BRUSH,
-            "应用主题",
-            "调整应用的外观颜色",
-            texts=["浅色", "深色", "跟随系统"],
-            parent=self.personalGroup
-        )
-        self.themeCard.optionChanged.connect(lambda ci: setTheme(cfg.theme.value))
-        self.personalGroup.addSettingCard(self.themeCard)
-        self.vBoxLayout.addWidget(self.personalGroup)
         
         self.apiGroup = SettingCardGroup("接口设置", self.scrollWidget)
 
@@ -50,7 +36,7 @@ class SettingInterface(ScrollArea):
 
         self.modelNameCard = SettingCard(
             FIF.ROBOT,
-            "模型名称",
+            "Model Name",
             "调用的模型名称",
             self.apiGroup
         )
@@ -72,14 +58,58 @@ class SettingInterface(ScrollArea):
         self.apiKeyCard.hBoxLayout.addWidget(self.apiKeyEdit)
         self.apiKeyCard.hBoxLayout.addSpacing(16)
 
+        self.__connectSignalToSlot()
+
         self.apiGroup.addSettingCard(self.baseUrlCard)
         self.apiGroup.addSettingCard(self.modelNameCard)
         self.apiGroup.addSettingCard(self.apiKeyCard)
 
         self.vBoxLayout.addWidget(self.apiGroup)
+
+        self.personalGroup = SettingCardGroup("个性化", self.scrollWidget)
+        
+        self.themeCard = OptionsSettingCard(
+            cfg.theme,
+            FIF.BRUSH,
+            "应用主题",
+            "调整应用的外观颜色",
+            texts=["浅色", "深色", "跟随系统"],
+            parent=self.personalGroup
+        )
+        self.themeCard.optionChanged.connect(lambda: setTheme(cfg.theme.value))
+        self.personalGroup.addSettingCard(self.themeCard)
+        self.vBoxLayout.addWidget(self.personalGroup)
+
+        self.hyperlinkGroup = SettingCardGroup("快捷方式", self.scrollWidget)
+
+        hyperlink_1 = HyperlinkCard(
+            url="https://register.ccopyright.com.cn/registration.html",
+            text="申请软件著作权",
+            icon=FIF.HELP,
+            title="中国版权登记业务平台",
+            content="申请与提交软件著作权"
+        )
+
+        hyperlink_2 = HyperlinkCard(
+            url="https://platform.iflow.cn",
+            text="获取API密钥",
+            icon=FIF.VPN,
+            title="心流开放平台",
+            content="获取API密钥"
+        )
+        
+        self.hyperlinkGroup.addSettingCard(hyperlink_1)
+        self.hyperlinkGroup.addSettingCard(hyperlink_2)
+        self.vBoxLayout.addWidget(self.hyperlinkGroup)
+
         self.vBoxLayout.addStretch(1)
 
-    def saveSettings(self):
+    def __connectSignalToSlot(self):
+        self.baseUrlEdit.editingFinished.connect(self.__saveApiConfig)
+        self.modelNameEdit.editingFinished.connect(self.__saveApiConfig)
+        self.apiKeyEdit.editingFinished.connect(self.__saveApiConfig)
+
+    def __saveApiConfig(self):
         cfg.set(cfg.base_url, self.baseUrlEdit.text())
         cfg.set(cfg.model_name, self.modelNameEdit.text())
         cfg.set(cfg.api_key, self.apiKeyEdit.text())

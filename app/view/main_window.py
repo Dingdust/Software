@@ -1,10 +1,11 @@
 from PyQt6.QtCore import QUrl
 from PyQt6.QtGui import QIcon, QDesktopServices
 
-from qfluentwidgets import FluentWindow
+from qfluentwidgets import setTheme
 from qfluentwidgets import FluentIcon as FIF
-from qfluentwidgets import NavigationItemPosition
+from qfluentwidgets import FluentWindow, NavigationItemPosition
 
+from app.common.config import cfg
 from .home_interface import HomeInterface
 from .manual_interface import ManualInterface
 from .code_interface import CodeInterface
@@ -15,6 +16,8 @@ class MainWindow(FluentWindow):
 
     def __init__(self):
         super().__init__()
+        setTheme(cfg.theme.value)
+        
         self.initWindow()
 
         self.homeInterface = HomeInterface(self)
