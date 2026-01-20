@@ -12,7 +12,7 @@ class Config(QConfig):
         "UI", "Theme", Theme.AUTO, OptionsValidator(Theme), serializer=EnumSerializer(Theme))
 
 cfg = Config()
-_config_path = os.path.join(os.path.dirname(__name__), "config", "config.json")
+_config_path = os.path.join(os.path.dirname(__name__), "app", "config", "config.json")
 os.makedirs(os.path.dirname(_config_path), exist_ok=True)
 qconfig.load(_config_path, cfg)
 cfg.save()
