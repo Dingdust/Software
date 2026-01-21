@@ -1,5 +1,6 @@
 import qfluentwidgets as qfw
 from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtGui import QFont, QPainter, QPixmap
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QStackedWidget, QGridLayout, QButtonGroup
 
 
@@ -8,16 +9,13 @@ class BaseSubPage(QWidget):
     nextSignal = pyqtSignal()
     prevSignal = pyqtSignal()
 
-    def __init__(self, title, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
         self._parent = parent
-        self.title = title
+        self.backgroundPixmap = QPixmap("./resources/background.png")
         
         self.vBoxLayout = QVBoxLayout(self)
         self.vBoxLayout.setSpacing(20)
-
-        self.titleLabel = qfw.TitleLabel(self.title, self)
-        self.vBoxLayout.addWidget(self.titleLabel)
 
         self.contentLayout = QVBoxLayout()
         self.vBoxLayout.addLayout(self.contentLayout)
@@ -37,20 +35,32 @@ class BaseSubPage(QWidget):
         
         self.vBoxLayout.addLayout(self.buttonLayout)
 
+    def paintEvent(self, e):
+        super().paintEvent(e)
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+        painter.setOpacity(0.05)
+        
+        pixmap = self.backgroundPixmap.scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        x = int((self.width() - pixmap.width()) / 2)
+        y = int((self.height() - pixmap.height()) / 2)
+        painter.drawPixmap(x, y, pixmap)
+
 class IdentityCard(qfw.ElevatedCardWidget):
     
     def __init__(self, icon, title, content, parent=None):
         self._parent = parent
         super().__init__(parent)
         self.setClickEnabled(True)
-        self.setFixedSize(280, 200)
+        self.setFixedSize(320, 240)
         
         self.vLayout = QVBoxLayout(self)
-        self.vLayout.setSpacing(10)
+        self.vLayout.setSpacing(20)
         self.vLayout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.iconWidget = qfw.IconWidget(icon, self)
-        self.iconWidget.setFixedSize(48, 48)
+        self.iconWidget.setFixedSize(64, 64)
         
         self.titleLabel = qfw.SubtitleLabel(title, self)
         self.contentLabel = qfw.BodyLabel(content, self)
@@ -63,10 +73,10 @@ class IdentityCard(qfw.ElevatedCardWidget):
 class IdentitySelectionInterface(BaseSubPage):
 
     def __init__(self, parent=None):
-        super().__init__("选择办理身份", parent)
+        super().__init__(parent)
         
         self.cardLayout = QHBoxLayout()
-        self.cardLayout.setSpacing(20)
+        self.cardLayout.setSpacing(64)
         self.cardLayout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         
         self.applicantCard = IdentityCard(qfw.FluentIcon.PEOPLE, "我是申请人", "办理本人的软件著作权登记", self)
@@ -81,15 +91,16 @@ class IdentitySelectionInterface(BaseSubPage):
         self.applicantCard.clicked.connect(self.nextSignal)
         
         self.prevBtn.hide()
+        self.nextBtn.hide()
 
 class SoftwareAppInfoInterface(BaseSubPage):
 
     def __init__(self, parent=None):
-        super().__init__("软件申请信息", parent)
+        super().__init__(parent)
         
         self.formLayout = QGridLayout()
         self.formLayout.setVerticalSpacing(20)
-        self.formLayout.setHorizontalSpacing(10)
+        self.formLayout.setHorizontalSpacing(20)
         
         self.acquisitionLabel = qfw.BodyLabel("权利取得方式", self)
         self.acquisitionGroup = QButtonGroup(self)
@@ -140,25 +151,25 @@ class SoftwareAppInfoInterface(BaseSubPage):
 class SoftwareDevInfoInterface(BaseSubPage):
 
     def __init__(self, parent=None):
-        super().__init__("软件开发信息", parent)
+        super().__init__(parent)
         self.contentLayout.addWidget(qfw.SubtitleLabel("此处填写软件开发信息", self))
 
 class SoftwareFeaturesInterface(BaseSubPage):
 
     def __init__(self, parent=None):
-        super().__init__("软件功能与特点", parent)
+        super().__init__(parent)
         self.contentLayout.addWidget(qfw.SubtitleLabel("此处填写软件功能与特点", self))
 
 class ConfirmationInterface(BaseSubPage):
 
     def __init__(self, parent=None):
-        super().__init__("确认信息", parent)
+        super().__init__(parent)
         self.contentLayout.addWidget(qfw.SubtitleLabel("请确认填报信息", self))
 
 class CompletionInterface(BaseSubPage):
 
     def __init__(self, parent=None):
-        super().__init__("填报完成", parent)
+        super().__init__(parent)
         self.contentLayout.addWidget(qfw.SubtitleLabel("填报已完成", self))
 
 class HomeInterface(QWidget):
@@ -173,9 +184,13 @@ class HomeInterface(QWidget):
         self.vBoxLayout.setSpacing(20)
 
         self.breadcrumb = qfw.BreadcrumbBar(self)
-        self.breadcrumb.setSpacing(20)
+        self.breadcrumb.setSpacing(16)
+        qfw.setFont(self.breadcrumb, 20, QFont.Weight.Bold)
 
-        self.vBoxLayout.addWidget(self.breadcrumb)
+        self.breadcrumbLayout = QHBoxLayout()
+        self.breadcrumbLayout.setContentsMargins(10, 0, 0, 0)
+        self.breadcrumbLayout.addWidget(self.breadcrumb)
+        self.vBoxLayout.addLayout(self.breadcrumbLayout)
 
         self.stackedWidget = QStackedWidget(self)
         self.vBoxLayout.addWidget(self.stackedWidget)
@@ -207,8 +222,6 @@ class HomeInterface(QWidget):
                 self.breadcrumb.addItem(key, name)
 
         self.breadcrumb.currentItemChanged.connect(self.switchToPage)
-
-        qfw.setFont(self.breadcrumb, 20)
 
     def switchToPage(self, routeKey):
         if routeKey in self.route_keys:
