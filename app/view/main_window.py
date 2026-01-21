@@ -34,7 +34,7 @@ class MainWindow(qfw.FluentWindow):
         self.addSubInterface(self.homeInterface, qfw.FluentIcon.HOME, "登记申请")
         self.addSubInterface(self.manualInterface, qfw.FluentIcon.BOOK_SHELF, "说明手册")
         self.addSubInterface(self.codeInterface, qfw.FluentIcon.CODE, "软件代码")
-        
+
         self.navigationInterface.addItem(
             routeKey="copyright",
             icon=qfw.FluentIcon.PEOPLE,
@@ -44,7 +44,7 @@ class MainWindow(qfw.FluentWindow):
             position=qfw.NavigationItemPosition.BOTTOM,
             tooltip="版权中心"
         )
-        
+
         self.addSubInterface(self.settingInterface, qfw.FluentIcon.SETTING, "设置", position=qfw.NavigationItemPosition.BOTTOM)
 
     @staticmethod

@@ -1,15 +1,13 @@
+import qfluentwidgets as qfw
 from PyQt6.QtWidgets import QWidget, QVBoxLayout
-
-from qfluentwidgets import setTheme
-from qfluentwidgets import FluentIcon as FIF
-from qfluentwidgets import ScrollArea, SettingCardGroup, SettingCard, LineEdit, PasswordLineEdit, OptionsSettingCard, HyperlinkCard
 
 from app.common.config import cfg
 
-class SettingInterface(ScrollArea):
+class SettingInterface(qfw.ScrollArea):
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
+        self._parent = parent
         self.setWidgetResizable(True)
         self.setObjectName("settingInterface")
         self.setStyleSheet("background-color: transparent;")
@@ -20,39 +18,39 @@ class SettingInterface(ScrollArea):
         self.vBoxLayout.setContentsMargins(36, 20, 36, 20)
         self.setWidget(self.scrollWidget)
         
-        self.apiGroup = SettingCardGroup("接口设置", self.scrollWidget)
+        self.apiGroup = qfw.SettingCardGroup("接口设置", self.scrollWidget)
 
-        self.baseUrlCard = SettingCard(
-            FIF.LINK,
+        self.baseUrlCard = qfw.SettingCard(
+            qfw.FluentIcon.LINK,
             "Base URL",
             "接口基础地址",
             self.apiGroup
         )
-        self.baseUrlEdit = LineEdit(self.baseUrlCard)
+        self.baseUrlEdit = qfw.LineEdit(self.baseUrlCard)
         self.baseUrlEdit.setText(str(cfg.base_url.value))
         self.baseUrlEdit.setFixedWidth(200)
         self.baseUrlCard.hBoxLayout.addWidget(self.baseUrlEdit)
         self.baseUrlCard.hBoxLayout.addSpacing(16)
 
-        self.modelNameCard = SettingCard(
-            FIF.ROBOT,
+        self.modelNameCard = qfw.SettingCard(
+            qfw.FluentIcon.ROBOT,
             "Model Name",
             "调用的模型名称",
             self.apiGroup
         )
-        self.modelNameEdit = LineEdit(self.modelNameCard)
+        self.modelNameEdit = qfw.LineEdit(self.modelNameCard)
         self.modelNameEdit.setText(str(cfg.model_name.value))
         self.modelNameEdit.setFixedWidth(200)
         self.modelNameCard.hBoxLayout.addWidget(self.modelNameEdit)
         self.modelNameCard.hBoxLayout.addSpacing(16)
 
-        self.apiKeyCard = SettingCard(
-            FIF.FINGERPRINT,
+        self.apiKeyCard = qfw.SettingCard(
+            qfw.FluentIcon.FINGERPRINT, 
             "API Key",
             "访问接口的密钥",
             self.apiGroup
         )
-        self.apiKeyEdit = PasswordLineEdit(self.apiKeyCard)
+        self.apiKeyEdit = qfw.PasswordLineEdit(self.apiKeyCard)
         self.apiKeyEdit.setText(str(cfg.api_key.value))
         self.apiKeyEdit.setFixedWidth(200)
         self.apiKeyCard.hBoxLayout.addWidget(self.apiKeyEdit)
@@ -66,34 +64,34 @@ class SettingInterface(ScrollArea):
 
         self.vBoxLayout.addWidget(self.apiGroup)
 
-        self.personalGroup = SettingCardGroup("个性化", self.scrollWidget)
+        self.personalGroup = qfw.SettingCardGroup("个性化", self.scrollWidget)
         
-        self.themeCard = OptionsSettingCard(
+        self.themeCard = qfw.OptionsSettingCard(
             cfg.theme,
-            FIF.BRUSH,
+            qfw.FluentIcon.BRUSH,
             "应用主题",
             "调整应用的外观颜色",
             texts=["浅色", "深色", "跟随系统"],
             parent=self.personalGroup
         )
-        self.themeCard.optionChanged.connect(lambda: setTheme(cfg.theme.value))
+        self.themeCard.optionChanged.connect(lambda: qfw.setTheme(cfg.theme.value))
         self.personalGroup.addSettingCard(self.themeCard)
         self.vBoxLayout.addWidget(self.personalGroup)
 
-        self.hyperlinkGroup = SettingCardGroup("快捷方式", self.scrollWidget)
+        self.hyperlinkGroup = qfw.SettingCardGroup("快捷方式", self.scrollWidget)
 
-        hyperlink_1 = HyperlinkCard(
+        hyperlink_1 = qfw.HyperlinkCard(
             url="https://register.ccopyright.com.cn/registration.html",
             text="申请软件著作权",
-            icon=FIF.HELP,
+            icon=qfw.FluentIcon.HELP,
             title="中国版权登记业务平台",
             content="申请与提交软件著作权"
         )
 
-        hyperlink_2 = HyperlinkCard(
+        hyperlink_2 = qfw.HyperlinkCard(
             url="https://platform.iflow.cn",
             text="获取API密钥",
-            icon=FIF.VPN,
+            icon=qfw.FluentIcon.VPN,
             title="心流开放平台",
             content="获取API密钥"
         )

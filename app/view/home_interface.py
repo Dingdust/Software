@@ -2,8 +2,6 @@ import qfluentwidgets as qfw
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QStackedWidget, QGridLayout, QButtonGroup
 
-from qfluentwidgets import (LineEdit, PrimaryPushButton, PushButton, ComboBox, RadioButton, 
-                            FluentIcon as FIF, IconWidget)
 
 class BaseSubPage(QWidget):
     
@@ -12,6 +10,7 @@ class BaseSubPage(QWidget):
 
     def __init__(self, title, parent=None):
         super().__init__(parent)
+        self._parent = parent
         self.title = title
         
         self.vBoxLayout = QVBoxLayout(self)
@@ -26,8 +25,8 @@ class BaseSubPage(QWidget):
         self.vBoxLayout.addStretch(1)
 
         self.buttonLayout = QHBoxLayout()
-        self.prevBtn = PushButton("上一步", self)
-        self.nextBtn = PrimaryPushButton("下一步", self)
+        self.prevBtn = qfw.PushButton("上一步", self)
+        self.nextBtn = qfw.PrimaryPushButton("下一步", self)
         
         self.prevBtn.clicked.connect(self.prevSignal)
         self.nextBtn.clicked.connect(self.nextSignal)
@@ -41,6 +40,7 @@ class BaseSubPage(QWidget):
 class IdentityCard(qfw.ElevatedCardWidget):
     
     def __init__(self, icon, title, content, parent=None):
+        self._parent = parent
         super().__init__(parent)
         self.setClickEnabled(True)
         self.setFixedSize(280, 200)
@@ -49,7 +49,7 @@ class IdentityCard(qfw.ElevatedCardWidget):
         self.vLayout.setSpacing(10)
         self.vLayout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.iconWidget = IconWidget(icon, self)
+        self.iconWidget = qfw.IconWidget(icon, self)
         self.iconWidget.setFixedSize(48, 48)
         
         self.titleLabel = qfw.SubtitleLabel(title, self)
@@ -69,8 +69,8 @@ class IdentitySelectionInterface(BaseSubPage):
         self.cardLayout.setSpacing(20)
         self.cardLayout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         
-        self.applicantCard = IdentityCard(FIF.PEOPLE, "我是申请人", "办理本人的软件著作权登记", self)
-        self.agentCard = IdentityCard(FIF.MARKET, "我是代理人", "受他人委托办理软件著作权登记", self)
+        self.applicantCard = IdentityCard(qfw.FluentIcon.PEOPLE, "我是申请人", "办理本人的软件著作权登记", self)
+        self.agentCard = IdentityCard(qfw.FluentIcon.MARKET, "我是代理人", "受他人委托办理软件著作权登记", self)
         
         self.cardLayout.addWidget(self.applicantCard)
         self.cardLayout.addWidget(self.agentCard)
@@ -93,8 +93,8 @@ class SoftwareAppInfoInterface(BaseSubPage):
         
         self.acquisitionLabel = qfw.BodyLabel("权利取得方式", self)
         self.acquisitionGroup = QButtonGroup(self)
-        self.originalRadio = RadioButton("原始取得", self)
-        self.derivedRadio = RadioButton("继受取得", self)
+        self.originalRadio = qfw.RadioButton("原始取得", self)
+        self.derivedRadio = qfw.RadioButton("继受取得", self)
         self.acquisitionGroup.addButton(self.originalRadio)
         self.acquisitionGroup.addButton(self.derivedRadio)
         self.originalRadio.setChecked(True)
@@ -108,28 +108,28 @@ class SoftwareAppInfoInterface(BaseSubPage):
         self.formLayout.addLayout(radioLayout, 0, 1)
 
         self.fullNameLabel = qfw.BodyLabel("软件全称", self)
-        self.fullNameEdit = LineEdit(self)
+        self.fullNameEdit = qfw.LineEdit(self)
         self.fullNameEdit.setPlaceholderText("请输入软件全称")
         self.fullNameEdit.setFixedWidth(400)
         self.formLayout.addWidget(self.fullNameLabel, 1, 0)
         self.formLayout.addWidget(self.fullNameEdit, 1, 1)
 
         self.abbrLabel = qfw.BodyLabel("软件简称", self)
-        self.abbrEdit = LineEdit(self)
+        self.abbrEdit = qfw.LineEdit(self)
         self.abbrEdit.setPlaceholderText("请输入软件简称，如无简称请留空，不要填写“无”")
         self.abbrEdit.setFixedWidth(400)
         self.formLayout.addWidget(self.abbrLabel, 2, 0)
         self.formLayout.addWidget(self.abbrEdit, 2, 1)
 
         self.versionLabel = qfw.BodyLabel("版本号", self)
-        self.versionEdit = LineEdit(self)
+        self.versionEdit = qfw.LineEdit(self)
         self.versionEdit.setPlaceholderText("请输入版本号")
         self.versionEdit.setFixedWidth(400)
         self.formLayout.addWidget(self.versionLabel, 3, 0)
         self.formLayout.addWidget(self.versionEdit, 3, 1)
 
         self.scopeLabel = qfw.BodyLabel("权利范围", self)
-        self.scopeCombo = ComboBox(self)
+        self.scopeCombo = qfw.ComboBox(self)
         self.scopeCombo.addItems(["全部权利", "部分权利"])
         self.scopeCombo.setFixedWidth(200)
         self.formLayout.addWidget(self.scopeLabel, 4, 0)
@@ -165,6 +165,7 @@ class HomeInterface(QWidget):
     
     def __init__(self, parent=None):
         super().__init__(parent=parent)
+        self._parent = parent
         self.setObjectName("homeInterface")
         
         self.vBoxLayout = QVBoxLayout(self)

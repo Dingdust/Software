@@ -1,22 +1,24 @@
 import qfluentwidgets as qfw
-from PyQt6.QtWidgets import QWidget, QVBoxLayout
 from PyQt6.QtCore import Qt
-from qfluentwidgets import ScrollArea, TitleLabel
+from PyQt6.QtWidgets import QWidget, QVBoxLayout
 
-class ManualInterface(ScrollArea):
+
+class ManualInterface(qfw.ScrollArea):
+
     def __init__(self, parent=None):
         super().__init__(parent=parent)
+        self._parent = parent
         self.setObjectName("manualInterface")
         self.setWidgetResizable(True)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setStyleSheet("background-color: transparent;")
-        
+
         self.scrollWidget = QWidget()
         self.vBoxLayout = QVBoxLayout(self.scrollWidget)
         self.setWidget(self.scrollWidget)
         self.scrollWidget.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, False)
-        
-        self.titleLabel = TitleLabel("使用说明手册", self.scrollWidget)
+
+        self.titleLabel = qfw.TitleLabel("使用说明手册", self.scrollWidget)
         self.contentLabel = qfw.BodyLabel(
             """
             <h2>软件著作权自动材料生成工具使用说明</h2>
@@ -31,7 +33,7 @@ class ManualInterface(ScrollArea):
             self.scrollWidget
         )
         self.contentLabel.setWordWrap(True)
-        
+
         self.vBoxLayout.addWidget(self.titleLabel)
         self.vBoxLayout.addWidget(self.contentLabel)
         self.vBoxLayout.addStretch(1)
