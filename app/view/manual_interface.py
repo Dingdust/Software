@@ -1,6 +1,7 @@
+import qfluentwidgets as qfw
 from PyQt6.QtWidgets import QWidget, QVBoxLayout
 from PyQt6.QtCore import Qt
-from qfluentwidgets import ScrollArea, TitleLabel, BodyLabel, CardWidget
+from qfluentwidgets import ScrollArea, TitleLabel
 
 class ManualInterface(ScrollArea):
     def __init__(self, parent=None):
@@ -16,7 +17,7 @@ class ManualInterface(ScrollArea):
         self.scrollWidget.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, False)
         
         self.titleLabel = TitleLabel("使用说明手册", self.scrollWidget)
-        self.contentLabel = BodyLabel(
+        self.contentLabel = qfw.BodyLabel(
             """
             <h2>软件著作权自动材料生成工具使用说明</h2>
             <p>本工具旨在帮助开发者快速生成软件著作权申请所需的文档材料。</p>

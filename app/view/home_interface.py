@@ -1,7 +1,8 @@
+import qfluentwidgets as qfw
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QStackedWidget, QFrame, QGridLayout, QButtonGroup
-from qfluentwidgets import (BreadcrumbBar, ElevatedCardWidget, TitleLabel, SubtitleLabel, BodyLabel,
-                            LineEdit, PrimaryPushButton, PushButton, ComboBox, RadioButton, 
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QStackedWidget, QGridLayout, QButtonGroup
+
+from qfluentwidgets import (LineEdit, PrimaryPushButton, PushButton, ComboBox, RadioButton, 
                             FluentIcon as FIF, IconWidget)
 
 class BaseSubPage(QWidget):
@@ -16,7 +17,7 @@ class BaseSubPage(QWidget):
         self.vBoxLayout = QVBoxLayout(self)
         self.vBoxLayout.setSpacing(20)
 
-        self.titleLabel = TitleLabel(self.title, self)
+        self.titleLabel = qfw.TitleLabel(self.title, self)
         self.vBoxLayout.addWidget(self.titleLabel)
 
         self.contentLayout = QVBoxLayout()
@@ -37,7 +38,7 @@ class BaseSubPage(QWidget):
         
         self.vBoxLayout.addLayout(self.buttonLayout)
 
-class IdentityCard(ElevatedCardWidget):
+class IdentityCard(qfw.ElevatedCardWidget):
     
     def __init__(self, icon, title, content, parent=None):
         super().__init__(parent)
@@ -51,8 +52,8 @@ class IdentityCard(ElevatedCardWidget):
         self.iconWidget = IconWidget(icon, self)
         self.iconWidget.setFixedSize(48, 48)
         
-        self.titleLabel = SubtitleLabel(title, self)
-        self.contentLabel = BodyLabel(content, self)
+        self.titleLabel = qfw.SubtitleLabel(title, self)
+        self.contentLabel = qfw.BodyLabel(content, self)
         self.contentLabel.setTextColor(Qt.GlobalColor.gray, Qt.GlobalColor.gray)
 
         self.vLayout.addWidget(self.iconWidget, 0, Qt.AlignmentFlag.AlignCenter)
@@ -90,7 +91,7 @@ class SoftwareAppInfoInterface(BaseSubPage):
         self.formLayout.setVerticalSpacing(20)
         self.formLayout.setHorizontalSpacing(10)
         
-        self.acquisitionLabel = BodyLabel("权利取得方式", self)
+        self.acquisitionLabel = qfw.BodyLabel("权利取得方式", self)
         self.acquisitionGroup = QButtonGroup(self)
         self.originalRadio = RadioButton("原始取得", self)
         self.derivedRadio = RadioButton("继受取得", self)
@@ -106,28 +107,28 @@ class SoftwareAppInfoInterface(BaseSubPage):
         self.formLayout.addWidget(self.acquisitionLabel, 0, 0)
         self.formLayout.addLayout(radioLayout, 0, 1)
 
-        self.fullNameLabel = BodyLabel("软件全称", self)
+        self.fullNameLabel = qfw.BodyLabel("软件全称", self)
         self.fullNameEdit = LineEdit(self)
         self.fullNameEdit.setPlaceholderText("请输入软件全称")
         self.fullNameEdit.setFixedWidth(400)
         self.formLayout.addWidget(self.fullNameLabel, 1, 0)
         self.formLayout.addWidget(self.fullNameEdit, 1, 1)
 
-        self.abbrLabel = BodyLabel("软件简称", self)
+        self.abbrLabel = qfw.BodyLabel("软件简称", self)
         self.abbrEdit = LineEdit(self)
         self.abbrEdit.setPlaceholderText("请输入软件简称，如无简称请留空，不要填写“无”")
         self.abbrEdit.setFixedWidth(400)
         self.formLayout.addWidget(self.abbrLabel, 2, 0)
         self.formLayout.addWidget(self.abbrEdit, 2, 1)
 
-        self.versionLabel = BodyLabel("版本号", self)
+        self.versionLabel = qfw.BodyLabel("版本号", self)
         self.versionEdit = LineEdit(self)
         self.versionEdit.setPlaceholderText("请输入版本号")
         self.versionEdit.setFixedWidth(400)
         self.formLayout.addWidget(self.versionLabel, 3, 0)
         self.formLayout.addWidget(self.versionEdit, 3, 1)
 
-        self.scopeLabel = BodyLabel("权利范围", self)
+        self.scopeLabel = qfw.BodyLabel("权利范围", self)
         self.scopeCombo = ComboBox(self)
         self.scopeCombo.addItems(["全部权利", "部分权利"])
         self.scopeCombo.setFixedWidth(200)
@@ -140,25 +141,25 @@ class SoftwareDevInfoInterface(BaseSubPage):
 
     def __init__(self, parent=None):
         super().__init__("软件开发信息", parent)
-        self.contentLayout.addWidget(SubtitleLabel("此处填写软件开发信息", self))
+        self.contentLayout.addWidget(qfw.SubtitleLabel("此处填写软件开发信息", self))
 
 class SoftwareFeaturesInterface(BaseSubPage):
 
     def __init__(self, parent=None):
         super().__init__("软件功能与特点", parent)
-        self.contentLayout.addWidget(SubtitleLabel("此处填写软件功能与特点", self))
+        self.contentLayout.addWidget(qfw.SubtitleLabel("此处填写软件功能与特点", self))
 
 class ConfirmationInterface(BaseSubPage):
 
     def __init__(self, parent=None):
         super().__init__("确认信息", parent)
-        self.contentLayout.addWidget(SubtitleLabel("请确认填报信息", self))
+        self.contentLayout.addWidget(qfw.SubtitleLabel("请确认填报信息", self))
 
 class CompletionInterface(BaseSubPage):
 
     def __init__(self, parent=None):
         super().__init__("填报完成", parent)
-        self.contentLayout.addWidget(SubtitleLabel("填报已完成", self))
+        self.contentLayout.addWidget(qfw.SubtitleLabel("填报已完成", self))
 
 class HomeInterface(QWidget):
     
@@ -170,7 +171,7 @@ class HomeInterface(QWidget):
         self.vBoxLayout.setContentsMargins(36, 20, 36, 20)
         self.vBoxLayout.setSpacing(20)
 
-        self.breadcrumb = BreadcrumbBar(self)
+        self.breadcrumb = qfw.BreadcrumbBar(self)
         self.breadcrumb.setSpacing(20)
 
         self.vBoxLayout.addWidget(self.breadcrumb)
@@ -187,29 +188,31 @@ class HomeInterface(QWidget):
             ("complete", "填报完成", CompletionInterface)
         ]
 
-        self.route_keys = []
         self.added_keys = []
+        self.route_keys = []
         
-        for i, (key, name, cls) in enumerate(self.pages_info):
+        for key, name, cls in self.pages_info:
             page = cls(self)
-            self.stackedWidget.addWidget(page)
-            self.route_keys.append(key)
-            
-            if i == 0:
-                self.breadcrumb.addItem(key, name)
-                self.added_keys.append(key)
-            
             page.nextSignal.connect(self.nextPage)
             page.prevSignal.connect(self.prevPage)
-            
             if key == "complete":
                 page.nextBtn.hide()
 
+            self.stackedWidget.addWidget(page)
+            self.route_keys.append(key)
+
+            if key == "identity":
+                self.added_keys.append(key)
+                self.breadcrumb.addItem(key, name)
+
         self.breadcrumb.currentItemChanged.connect(self.switchToPage)
+
+        qfw.setFont(self.breadcrumb, 20)
 
     def switchToPage(self, routeKey):
         if routeKey in self.route_keys:
             index = self.route_keys.index(routeKey)
+            self.added_keys = self.route_keys[:index+1]
             self.stackedWidget.setCurrentIndex(index)
 
     def nextPage(self):
@@ -217,11 +220,9 @@ class HomeInterface(QWidget):
         if current_idx < self.stackedWidget.count() - 1:
             next_idx = current_idx + 1
             key, name, _ = self.pages_info[next_idx]
-            
             if key not in self.added_keys:
-                self.breadcrumb.addItem(key, name)
                 self.added_keys.append(key)
-            
+                self.breadcrumb.addItem(key, name)
             self.breadcrumb.setCurrentItem(key)
             self.stackedWidget.setCurrentIndex(next_idx)
 
