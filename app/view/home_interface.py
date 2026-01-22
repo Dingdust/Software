@@ -1,7 +1,7 @@
 import qfluentwidgets as qfw
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import Qt, pyqtSignal, QTimer
 from PyQt6.QtGui import QFont, QPainter, QPixmap
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QStackedWidget, QGridLayout, QButtonGroup
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QStackedWidget, QButtonGroup
 
 
 class BaseSubPage(QWidget):
@@ -17,10 +17,17 @@ class BaseSubPage(QWidget):
         self.vBoxLayout = QVBoxLayout(self)
         self.vBoxLayout.setSpacing(20)
 
-        self.contentLayout = QVBoxLayout()
-        self.vBoxLayout.addLayout(self.contentLayout)
+        self.scrollArea = qfw.SingleDirectionScrollArea(self)
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollArea.setStyleSheet("background-color: transparent; border: none;")
         
-        self.vBoxLayout.addStretch(1)
+        self.scrollWidget = QWidget()
+        self.scrollWidget.setStyleSheet("background-color: transparent;")
+        
+        self.contentLayout = QVBoxLayout(self.scrollWidget)
+        self.scrollArea.setWidget(self.scrollWidget)
+        
+        self.vBoxLayout.addWidget(self.scrollArea)
 
         self.buttonLayout = QHBoxLayout()
         self.prevBtn = qfw.PushButton("上一步", self)
@@ -35,12 +42,54 @@ class BaseSubPage(QWidget):
         
         self.vBoxLayout.addLayout(self.buttonLayout)
 
+    def show_info(
+        self, 
+        title: str = "提示",
+        content: str = "暂不支持本服务！"):
+        qfw.InfoBar.info(
+            title=title,
+            content=content,
+            orient=Qt.Orientation.Horizontal,
+            isClosable=True,
+            duration=1000,
+            position=qfw.InfoBarPosition.TOP_RIGHT,
+            parent=self._parent
+        )
+
+    def show_warning(
+        self, 
+        title: str = "提示",
+        content: str = "暂不支持本服务！"):
+        qfw.InfoBar.warning(
+            title=title,
+            content=content,
+            orient=Qt.Orientation.Horizontal,
+            isClosable=True,
+            duration=1000,
+            position=qfw.InfoBarPosition.TOP_RIGHT,
+            parent=self._parent
+        )
+
+    def show_error(
+        self, 
+        title: str = "提示",
+        content: str = "暂不支持本服务！"):
+        qfw.InfoBar.error(
+            title=title,
+            content=content,
+            orient=Qt.Orientation.Horizontal,
+            isClosable=True,
+            duration=1000,
+            position=qfw.InfoBarPosition.TOP_RIGHT,
+            parent=self._parent
+        )
+
     def paintEvent(self, e):
         super().paintEvent(e)
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
-        painter.setOpacity(0.05)
+        painter.setOpacity(0.08)
         
         pixmap = self.backgroundPixmap.scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
         x = int((self.width() - pixmap.width()) / 2)
@@ -50,8 +99,8 @@ class BaseSubPage(QWidget):
 class IdentityCard(qfw.ElevatedCardWidget):
     
     def __init__(self, icon, title, content, parent=None):
-        self._parent = parent
         super().__init__(parent)
+        self._parent = parent
         self.setClickEnabled(True)
         self.setFixedSize(320, 240)
         
@@ -74,6 +123,7 @@ class IdentitySelectionInterface(BaseSubPage):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self._parent = parent
         
         self.cardLayout = QHBoxLayout()
         self.cardLayout.setSpacing(64)
@@ -89,6 +139,7 @@ class IdentitySelectionInterface(BaseSubPage):
         self.contentLayout.addLayout(self.cardLayout)
         
         self.applicantCard.clicked.connect(self.nextSignal)
+        self.agentCard.clicked.connect(self.show_info)
         
         self.prevBtn.hide()
         self.nextBtn.hide()
@@ -97,14 +148,13 @@ class SoftwareAppInfoInterface(BaseSubPage):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        
-        self.group = qfw.SettingCardGroup("软件申请信息", self)
+        self._parent = parent
         
         self.acquisitionCard = qfw.SettingCard(
             qfw.FluentIcon.CERTIFICATE,
             "权利取得方式",
             "请选择软件权利的取得方式",
-            self.group
+            self.scrollWidget
         )
         self.acquisitionGroup = QButtonGroup(self)
         self.originalRadio = qfw.RadioButton("原始取得", self.acquisitionCard)
@@ -112,6 +162,7 @@ class SoftwareAppInfoInterface(BaseSubPage):
         self.acquisitionGroup.addButton(self.originalRadio)
         self.acquisitionGroup.addButton(self.derivedRadio)
         self.originalRadio.setChecked(True)
+        self.derivedRadio.clicked.connect(self.onDerivedClicked)
         
         self.acquisitionCard.hBoxLayout.addWidget(self.originalRadio)
         self.acquisitionCard.hBoxLayout.addSpacing(20)
@@ -122,11 +173,11 @@ class SoftwareAppInfoInterface(BaseSubPage):
             qfw.FluentIcon.EDIT,
             "软件全称",
             "请输入软件的全称",
-            self.group
+            self.scrollWidget
         )
         self.fullNameEdit = qfw.LineEdit(self.fullNameCard)
         self.fullNameEdit.setPlaceholderText("请输入软件全称")
-        self.fullNameEdit.setFixedWidth(300)
+        self.fullNameEdit.setFixedWidth(360)
         self.fullNameCard.hBoxLayout.addWidget(self.fullNameEdit)
         self.fullNameCard.hBoxLayout.addSpacing(20)
 
@@ -134,11 +185,11 @@ class SoftwareAppInfoInterface(BaseSubPage):
             qfw.FluentIcon.TAG,
             "软件简称",
             "请输入软件简称（选填）",
-            self.group
+            self.scrollWidget
         )
         self.abbrEdit = qfw.LineEdit(self.abbrCard)
-        self.abbrEdit.setPlaceholderText("如有简称请填写")
-        self.abbrEdit.setFixedWidth(300)
+        self.abbrEdit.setPlaceholderText("请输入软件简称，如无简称请留空，不要填写“无”。")
+        self.abbrEdit.setFixedWidth(360)
         self.abbrCard.hBoxLayout.addWidget(self.abbrEdit)
         self.abbrCard.hBoxLayout.addSpacing(20)
 
@@ -146,11 +197,11 @@ class SoftwareAppInfoInterface(BaseSubPage):
             qfw.FluentIcon.INFO,
             "版本号",
             "请输入软件版本号",
-            self.group
+            self.scrollWidget
         )
         self.versionEdit = qfw.LineEdit(self.versionCard)
-        self.versionEdit.setPlaceholderText("V1.0")
-        self.versionEdit.setFixedWidth(300)
+        self.versionEdit.setPlaceholderText("请输入版本号")
+        self.versionEdit.setFixedWidth(360)
         self.versionCard.hBoxLayout.addWidget(self.versionEdit)
         self.versionCard.hBoxLayout.addSpacing(20)
 
@@ -158,63 +209,216 @@ class SoftwareAppInfoInterface(BaseSubPage):
             qfw.FluentIcon.VIEW,
             "权利范围",
             "请选择权利范围",
-            self.group
+            self.scrollWidget
         )
-        self.scopeCombo = qfw.ComboBox(self.scopeCard)
-        self.scopeCombo.addItems(["全部权利", "部分权利"])
-        self.scopeCombo.setFixedWidth(200)
-        self.scopeCard.hBoxLayout.addWidget(self.scopeCombo)
+        self.scopeGroup = QButtonGroup(self)
+        self.allRightsRadio = qfw.RadioButton("全部权利", self.scopeCard)
+        self.partRightsRadio = qfw.RadioButton("部分权利", self.scopeCard)
+        self.scopeGroup.addButton(self.allRightsRadio)
+        self.scopeGroup.addButton(self.partRightsRadio)
+        self.allRightsRadio.setChecked(True)
+        self.partRightsRadio.clicked.connect(self.onPartClicked)
+        
+        self.scopeCard.hBoxLayout.addWidget(self.allRightsRadio)
+        self.scopeCard.hBoxLayout.addSpacing(20)
+        self.scopeCard.hBoxLayout.addWidget(self.partRightsRadio)
         self.scopeCard.hBoxLayout.addSpacing(20)
         
-        self.group.addSettingCard(self.acquisitionCard)
-        self.group.addSettingCard(self.fullNameCard)
-        self.group.addSettingCard(self.abbrCard)
-        self.group.addSettingCard(self.versionCard)
-        self.group.addSettingCard(self.scopeCard)
-        
-        self.contentLayout.addWidget(self.group)
+        self.contentLayout.addWidget(self.acquisitionCard)
+        self.contentLayout.addWidget(self.fullNameCard)
+        self.contentLayout.addWidget(self.abbrCard)
+        self.contentLayout.addWidget(self.versionCard)
+        self.contentLayout.addWidget(self.scopeCard)
+
+        self.nextBtn.disconnect()
+        self.nextBtn.clicked.connect(self.check_for_next)
+
+    def onDerivedClicked(self):
+        self.show_info()
+        QTimer.singleShot(1000, lambda: self.originalRadio.setChecked(True))
+
+    def onPartClicked(self):
+        self.show_info()
+        QTimer.singleShot(1000, lambda: self.allRightsRadio.setChecked(True))
+
+    def check_for_next(self):
+        if self.originalRadio.isChecked():
+            if self.fullNameEdit.text() != "":
+                if len(self.abbrEdit.text()) <= len(self.fullNameEdit.text()):
+                    if self.versionEdit.text() != "":
+                        if self.allRightsRadio.isChecked():
+                            self.nextSignal.emit()
+                        else:
+                            self.show_error(content="请检查【权利范围】是否填写正确！")
+                    else:
+                        self.show_info(content="【版本号】已自动补全，请检查！")
+                        self.versionEdit.setText("V1.0")
+                        self.versionEdit.setFocus()
+                else:
+                    self.show_warning(content="软件简称字数多于软件全称，可能发生补正！")
+                    self.abbrEdit.setFocus()
+            else:
+                self.show_error(content="请检查【软件全称】是否填写正确！")
+                self.fullNameEdit.setFocus()
+        else:
+            self.show_error(content="请检查【权利取得方式】是否填写正确！")
 
 class SoftwareDevInfoInterface(BaseSubPage):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.contentLayout.addWidget(qfw.SubtitleLabel("此处填写软件开发信息", self))
+        self._parent = parent
+        
+        self.acquisitionCard = qfw.SettingCard(
+            qfw.FluentIcon.CERTIFICATE,
+            "权利取得方式",
+            "请选择软件权利的取得方式",
+            self.scrollWidget
+        )
+        self.acquisitionGroup = QButtonGroup(self)
+        self.originalRadio = qfw.RadioButton("原始取得", self.acquisitionCard)
+        self.derivedRadio = qfw.RadioButton("继受取得", self.acquisitionCard)
+        self.acquisitionGroup.addButton(self.originalRadio)
+        self.acquisitionGroup.addButton(self.derivedRadio)
+        self.originalRadio.setChecked(True)
+        self.derivedRadio.clicked.connect(self.onDerivedClicked)
+        
+        self.acquisitionCard.hBoxLayout.addWidget(self.originalRadio)
+        self.acquisitionCard.hBoxLayout.addSpacing(20)
+        self.acquisitionCard.hBoxLayout.addWidget(self.derivedRadio)
+        self.acquisitionCard.hBoxLayout.addSpacing(20)
+
+        self.fullNameCard = qfw.SettingCard(
+            qfw.FluentIcon.EDIT,
+            "软件全称",
+            "请输入软件的全称",
+            self.scrollWidget
+        )
+        self.fullNameEdit = qfw.LineEdit(self.fullNameCard)
+        self.fullNameEdit.setPlaceholderText("请输入软件全称")
+        self.fullNameEdit.setFixedWidth(360)
+        self.fullNameCard.hBoxLayout.addWidget(self.fullNameEdit)
+        self.fullNameCard.hBoxLayout.addSpacing(20)
+
+        self.abbrCard = qfw.SettingCard(
+            qfw.FluentIcon.TAG,
+            "软件简称",
+            "请输入软件简称（选填）",
+            self.scrollWidget
+        )
+        self.abbrEdit = qfw.LineEdit(self.abbrCard)
+        self.abbrEdit.setPlaceholderText("请输入软件简称，如无简称请留空，不要填写“无”。")
+        self.abbrEdit.setFixedWidth(360)
+        self.abbrCard.hBoxLayout.addWidget(self.abbrEdit)
+        self.abbrCard.hBoxLayout.addSpacing(20)
+
+        self.versionCard = qfw.SettingCard(
+            qfw.FluentIcon.INFO,
+            "版本号",
+            "请输入软件版本号",
+            self.scrollWidget
+        )
+        self.versionEdit = qfw.LineEdit(self.versionCard)
+        self.versionEdit.setPlaceholderText("请输入版本号")
+        self.versionEdit.setFixedWidth(360)
+        self.versionCard.hBoxLayout.addWidget(self.versionEdit)
+        self.versionCard.hBoxLayout.addSpacing(20)
+
+        self.scopeCard = qfw.SettingCard(
+            qfw.FluentIcon.VIEW,
+            "权利范围",
+            "请选择权利范围",
+            self.scrollWidget
+        )
+        self.scopeGroup = QButtonGroup(self)
+        self.allRightsRadio = qfw.RadioButton("全部权利", self.scopeCard)
+        self.partRightsRadio = qfw.RadioButton("部分权利", self.scopeCard)
+        self.scopeGroup.addButton(self.allRightsRadio)
+        self.scopeGroup.addButton(self.partRightsRadio)
+        self.allRightsRadio.setChecked(True)
+        self.partRightsRadio.clicked.connect(self.onPartClicked)
+        
+        self.scopeCard.hBoxLayout.addWidget(self.allRightsRadio)
+        self.scopeCard.hBoxLayout.addSpacing(20)
+        self.scopeCard.hBoxLayout.addWidget(self.partRightsRadio)
+        self.scopeCard.hBoxLayout.addSpacing(20)
+        
+        self.contentLayout.addWidget(self.acquisitionCard)
+        self.contentLayout.addWidget(self.fullNameCard)
+        self.contentLayout.addWidget(self.abbrCard)
+        self.contentLayout.addWidget(self.versionCard)
+        self.contentLayout.addWidget(self.scopeCard)
+
+        self.nextBtn.disconnect()
+        self.nextBtn.clicked.connect(self.check_for_next)
+
+    def onDerivedClicked(self):
+        self.show_info()
+        QTimer.singleShot(1000, lambda: self.originalRadio.setChecked(True))
+
+    def onPartClicked(self):
+        self.show_info()
+        QTimer.singleShot(1000, lambda: self.allRightsRadio.setChecked(True))
+
+    def check_for_next(self):
+        if self.originalRadio.isChecked():
+            if self.fullNameEdit.text() != "":
+                if len(self.abbrEdit.text()) <= len(self.fullNameEdit.text()):
+                    if self.versionEdit.text() != "":
+                        if self.allRightsRadio.isChecked():
+                            self.nextSignal.emit()
+                        else:
+                            self.show_error(content="请检查【权利范围】是否填写正确！")
+                    else:
+                        self.show_info(content="【版本号】已自动补全，请检查！")
+                        self.versionEdit.setText("V1.0")
+                        self.versionEdit.setFocus()
+                else:
+                    self.show_warning(content="软件简称字数多于软件全称，可能发生补正！")
+                    self.abbrEdit.setFocus()
+            else:
+                self.show_error(content="请检查【软件全称】是否填写正确！")
+                self.fullNameEdit.setFocus()
+        else:
+            self.show_error(content="请检查【权利取得方式】是否填写正确！")
 
 class SoftwareFeaturesInterface(BaseSubPage):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self._parent = parent
         self.contentLayout.addWidget(qfw.SubtitleLabel("此处填写软件功能与特点", self))
 
 class ConfirmationInterface(BaseSubPage):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self._parent = parent
         self.contentLayout.addWidget(qfw.SubtitleLabel("请确认填报信息", self))
 
 class CompletionInterface(BaseSubPage):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self._parent = parent
         self.contentLayout.addWidget(qfw.SubtitleLabel("填报已完成", self))
 
 class HomeInterface(QWidget):
     
     def __init__(self, parent=None):
-        super().__init__(parent=parent)
+        super().__init__(parent)
         self._parent = parent
         self.setObjectName("homeInterface")
         
         self.vBoxLayout = QVBoxLayout(self)
-        self.vBoxLayout.setContentsMargins(36, 20, 36, 20)
-        self.vBoxLayout.setSpacing(20)
+        self.vBoxLayout.setContentsMargins(36, 36, 36, 36)
 
         self.breadcrumb = qfw.BreadcrumbBar(self)
-        self.breadcrumb.setSpacing(16)
-        qfw.setFont(self.breadcrumb, 20, QFont.Weight.Bold)
+        self.breadcrumb.setSpacing(18)
+        qfw.setFont(self.breadcrumb, 18, QFont.Weight.Bold)
 
         self.breadcrumbLayout = QHBoxLayout()
-        self.breadcrumbLayout.setContentsMargins(10, 0, 0, 0)
+        self.breadcrumbLayout.setContentsMargins(18, 0, 0, 0)
         self.breadcrumbLayout.addWidget(self.breadcrumb)
         self.vBoxLayout.addLayout(self.breadcrumbLayout)
 
