@@ -98,55 +98,81 @@ class SoftwareAppInfoInterface(BaseSubPage):
     def __init__(self, parent=None):
         super().__init__(parent)
         
-        self.formLayout = QGridLayout()
-        self.formLayout.setVerticalSpacing(20)
-        self.formLayout.setHorizontalSpacing(20)
+        self.group = qfw.SettingCardGroup("软件申请信息", self)
         
-        self.acquisitionLabel = qfw.BodyLabel("权利取得方式", self)
+        self.acquisitionCard = qfw.SettingCard(
+            qfw.FluentIcon.CERTIFICATE,
+            "权利取得方式",
+            "请选择软件权利的取得方式",
+            self.group
+        )
         self.acquisitionGroup = QButtonGroup(self)
-        self.originalRadio = qfw.RadioButton("原始取得", self)
-        self.derivedRadio = qfw.RadioButton("继受取得", self)
+        self.originalRadio = qfw.RadioButton("原始取得", self.acquisitionCard)
+        self.derivedRadio = qfw.RadioButton("继受取得", self.acquisitionCard)
         self.acquisitionGroup.addButton(self.originalRadio)
         self.acquisitionGroup.addButton(self.derivedRadio)
         self.originalRadio.setChecked(True)
         
-        radioLayout = QHBoxLayout()
-        radioLayout.addWidget(self.originalRadio)
-        radioLayout.addWidget(self.derivedRadio)
-        radioLayout.addStretch(1)
-        
-        self.formLayout.addWidget(self.acquisitionLabel, 0, 0)
-        self.formLayout.addLayout(radioLayout, 0, 1)
+        self.acquisitionCard.hBoxLayout.addWidget(self.originalRadio)
+        self.acquisitionCard.hBoxLayout.addSpacing(20)
+        self.acquisitionCard.hBoxLayout.addWidget(self.derivedRadio)
+        self.acquisitionCard.hBoxLayout.addSpacing(20)
 
-        self.fullNameLabel = qfw.BodyLabel("软件全称", self)
-        self.fullNameEdit = qfw.LineEdit(self)
+        self.fullNameCard = qfw.SettingCard(
+            qfw.FluentIcon.EDIT,
+            "软件全称",
+            "请输入软件的全称",
+            self.group
+        )
+        self.fullNameEdit = qfw.LineEdit(self.fullNameCard)
         self.fullNameEdit.setPlaceholderText("请输入软件全称")
-        self.fullNameEdit.setFixedWidth(400)
-        self.formLayout.addWidget(self.fullNameLabel, 1, 0)
-        self.formLayout.addWidget(self.fullNameEdit, 1, 1)
+        self.fullNameEdit.setFixedWidth(300)
+        self.fullNameCard.hBoxLayout.addWidget(self.fullNameEdit)
+        self.fullNameCard.hBoxLayout.addSpacing(20)
 
-        self.abbrLabel = qfw.BodyLabel("软件简称", self)
-        self.abbrEdit = qfw.LineEdit(self)
-        self.abbrEdit.setPlaceholderText("请输入软件简称，如无简称请留空，不要填写“无”")
-        self.abbrEdit.setFixedWidth(400)
-        self.formLayout.addWidget(self.abbrLabel, 2, 0)
-        self.formLayout.addWidget(self.abbrEdit, 2, 1)
+        self.abbrCard = qfw.SettingCard(
+            qfw.FluentIcon.TAG,
+            "软件简称",
+            "请输入软件简称（选填）",
+            self.group
+        )
+        self.abbrEdit = qfw.LineEdit(self.abbrCard)
+        self.abbrEdit.setPlaceholderText("如有简称请填写")
+        self.abbrEdit.setFixedWidth(300)
+        self.abbrCard.hBoxLayout.addWidget(self.abbrEdit)
+        self.abbrCard.hBoxLayout.addSpacing(20)
 
-        self.versionLabel = qfw.BodyLabel("版本号", self)
-        self.versionEdit = qfw.LineEdit(self)
-        self.versionEdit.setPlaceholderText("请输入版本号")
-        self.versionEdit.setFixedWidth(400)
-        self.formLayout.addWidget(self.versionLabel, 3, 0)
-        self.formLayout.addWidget(self.versionEdit, 3, 1)
+        self.versionCard = qfw.SettingCard(
+            qfw.FluentIcon.INFO,
+            "版本号",
+            "请输入软件版本号",
+            self.group
+        )
+        self.versionEdit = qfw.LineEdit(self.versionCard)
+        self.versionEdit.setPlaceholderText("V1.0")
+        self.versionEdit.setFixedWidth(300)
+        self.versionCard.hBoxLayout.addWidget(self.versionEdit)
+        self.versionCard.hBoxLayout.addSpacing(20)
 
-        self.scopeLabel = qfw.BodyLabel("权利范围", self)
-        self.scopeCombo = qfw.ComboBox(self)
+        self.scopeCard = qfw.SettingCard(
+            qfw.FluentIcon.VIEW,
+            "权利范围",
+            "请选择权利范围",
+            self.group
+        )
+        self.scopeCombo = qfw.ComboBox(self.scopeCard)
         self.scopeCombo.addItems(["全部权利", "部分权利"])
         self.scopeCombo.setFixedWidth(200)
-        self.formLayout.addWidget(self.scopeLabel, 4, 0)
-        self.formLayout.addWidget(self.scopeCombo, 4, 1)
+        self.scopeCard.hBoxLayout.addWidget(self.scopeCombo)
+        self.scopeCard.hBoxLayout.addSpacing(20)
         
-        self.contentLayout.addLayout(self.formLayout)
+        self.group.addSettingCard(self.acquisitionCard)
+        self.group.addSettingCard(self.fullNameCard)
+        self.group.addSettingCard(self.abbrCard)
+        self.group.addSettingCard(self.versionCard)
+        self.group.addSettingCard(self.scopeCard)
+        
+        self.contentLayout.addWidget(self.group)
 
 class SoftwareDevInfoInterface(BaseSubPage):
 
