@@ -3,6 +3,8 @@ from PyQt6.QtCore import Qt, pyqtSignal, QTimer
 from PyQt6.QtGui import QFont, QPainter, QPixmap
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QStackedWidget, QButtonGroup
 
+from .custom_widget import EditSettingCard
+
 
 class BaseSubPage(QWidget):
     
@@ -428,7 +430,20 @@ class SoftwareFeaturesInterface(BaseSubPage):
         super().__init__(parent)
         self._parent = parent
         
-        self.contentLayout.addWidget(qfw.SubtitleLabel("此处填写软件功能与特点", self))
+        self.devHardwareEnvCard = EditSettingCard(
+            qfw.FluentIcon.SETTING,
+            "开发的硬件环境",
+            "请填写开发的硬件环境（50字）",
+            self.scrollWidget
+        )
+
+        self.contentLayout.addWidget(self.devHardwareEnvCard)
+
+        self.nextBtn.clicked.disconnect()
+        self.nextBtn.clicked.connect(self.check_for_next)
+
+    def check_for_next(self):
+        self.nextSignal.emit()
 
 class ConfirmationInterface(BaseSubPage):
 
@@ -467,10 +482,11 @@ class HomeInterface(QWidget):
         self.vBoxLayout.addWidget(self.stackedWidget)
 
         self.pages_info = [
+            ("features", "软件功能与特点", SoftwareFeaturesInterface),
             ("identity", "选择办理身份", IdentitySelectionInterface),
             ("app_info", "软件申请信息", SoftwareAppInfoInterface),
             ("dev_info", "软件开发信息", SoftwareDevInfoInterface),
-            ("features", "软件功能与特点", SoftwareFeaturesInterface),
+            # ("features", "软件功能与特点", SoftwareFeaturesInterface),
             ("confirm", "确认信息", ConfirmationInterface),
             ("complete", "填报完成", CompletionInterface)
         ]
