@@ -1,9 +1,9 @@
 from typing import Union
 
 import qfluentwidgets as qfw
-from PyQt6.QtCore import Qt, QRectF
+from PyQt6.QtCore import Qt, QRectF, pyqtSignal
 from PyQt6.QtGui import QColor, QIcon, QPainter
-from PyQt6.QtWidgets import QFrame, QHBoxLayout, QLabel, QVBoxLayout
+from PyQt6.QtWidgets import QFrame, QHBoxLayout, QLabel, QVBoxLayout, QWidget
 
 
 def drawIcon(icon, painter, rect, state=QIcon.State.Off, **attributes):
@@ -28,39 +28,65 @@ class SettingIconWidget(qfw.IconWidget):
 
 class EditSettingCard(QFrame):
 
-    def __init__(self, icon: Union[str, QIcon, qfw.FluentIconBase], title, content=None, parent=None):
+    clicked = pyqtSignal()
+
+    def __init__(self, icon: Union[str, QIcon, qfw.FluentIconBase], title, content=None, parent=None, text: str = "AI自动填写"):
         super().__init__(parent=parent)
         self.iconLabel = SettingIconWidget(icon, self)
         self.titleLabel = QLabel(title, self)
         self.contentLabel = QLabel(content or '', self)
-        self.hBoxLayout = QHBoxLayout(self)
+        
+        self.mainLayout = QVBoxLayout(self)
+        self.mainLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.mainLayout.setSpacing(0)
+        self.mainLayout.setContentsMargins(0, 0, 0, 0)
+        
+        self.topWidget = QWidget()
+        self.topWidget.setFixedHeight(70 if content else 50)
+        self.topLayout = QHBoxLayout(self.topWidget)
+        
         self.vBoxLayout = QVBoxLayout()
 
         if not content:
             self.contentLabel.hide()
 
-        self.setFixedHeight(70 if content else 50)
         self.iconLabel.setFixedSize(16, 16)
 
-        self.hBoxLayout.setSpacing(0)
-        self.hBoxLayout.setContentsMargins(16, 0, 0, 0)
-        self.hBoxLayout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+        self.topLayout.setSpacing(0)
+        self.topLayout.setContentsMargins(16, 0, 0, 0)
+        self.topLayout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
         self.vBoxLayout.setSpacing(0)
         self.vBoxLayout.setContentsMargins(0, 0, 0, 0)
         self.vBoxLayout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
-        self.hBoxLayout.addWidget(self.iconLabel, 0, Qt.AlignmentFlag.AlignLeft)
-        self.hBoxLayout.addSpacing(16)
+        self.topLayout.addWidget(self.iconLabel, 0, Qt.AlignmentFlag.AlignLeft)
+        self.topLayout.addSpacing(16)
 
-        self.hBoxLayout.addLayout(self.vBoxLayout)
+        self.topLayout.addLayout(self.vBoxLayout)
         self.vBoxLayout.addWidget(self.titleLabel, 0, Qt.AlignmentFlag.AlignLeft)
         self.vBoxLayout.addWidget(self.contentLabel, 0, Qt.AlignmentFlag.AlignLeft)
 
-        self.hBoxLayout.addSpacing(16)
-        self.hBoxLayout.addStretch(1)
+        self.topLayout.addSpacing(16)
+        self.topLayout.addStretch(1)
+        
+        self.mainLayout.addWidget(self.topWidget)
+        
+        self.plainTextEdit = qfw.PlainTextEdit(self)
+        self.plainTextEdit.setFixedHeight(100)
+        
+        self.bottomLayout = QHBoxLayout()
+        self.bottomLayout.setContentsMargins(16, 0, 16, 16)
+        self.bottomLayout.addWidget(self.plainTextEdit)
+        self.mainLayout.addLayout(self.bottomLayout)
 
         self.contentLabel.setObjectName('contentLabel')
+        self.setFixedHeight(186 if content else 166)
         qfw.FluentStyleSheet.SETTING_CARD.apply(self)
+
+        self.button = qfw.PushButton(text, self, qfw.FluentIcon.EDIT)
+        self.topLayout.addWidget(self.button, 0, Qt.AlignmentFlag.AlignRight)
+        self.topLayout.addSpacing(16)
+        self.button.clicked.connect(self.clicked)
 
     def setTitle(self, title: str):
         self.titleLabel.setText(title)
