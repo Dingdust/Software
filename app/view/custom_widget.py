@@ -156,7 +156,101 @@ class DevLanguageCard(QFrame):
         
         self.mainLayout.addWidget(self.topWidget)
 
-        self.tags = ["Assembly language", "C", "C#"]
+        self.tags = ["Assembly language", "C", "C#", "C++", "Delphi/Object Pascal", "Go", "HTML",
+                     "Java", "JavaScript", "MATLAB", "Objective-C", "PHP", "PL/SQL", "Perl",
+                     "Python", "R", "Ruby", "SQL", "Swift", "Visual Basic", "Visual Basic .Net"] 
+        self.tagLayout = qfw.FlowLayout()
+        self.tagLayout.setContentsMargins(16, 0, 16, 0)
+        for tag in self.tags:
+            self.tagLayout.addWidget(qfw.ToggleButton(tag))
+
+        self.mainLayout.addLayout(self.tagLayout)
+        
+        self.plainTextEdit = qfw.PlainTextEdit(self)
+        self.plainTextEdit.setFixedHeight(100)
+        
+        self.bottomLayout = QHBoxLayout()
+        self.bottomLayout.setContentsMargins(16, 0, 16, 16)
+        self.bottomLayout.addWidget(self.plainTextEdit)
+        self.mainLayout.addSpacing(16)
+        self.mainLayout.addLayout(self.bottomLayout)
+
+        self.contentLabel.setObjectName('contentLabel')
+        qfw.FluentStyleSheet.SETTING_CARD.apply(self)
+
+        self.button = qfw.PushButton(text, self, qfw.FluentIcon.EDIT)
+        self.topLayout.addWidget(self.button, 0, Qt.AlignmentFlag.AlignRight)
+        self.topLayout.addSpacing(16)
+        self.button.clicked.connect(self.clicked)
+
+    def setTitle(self, title: str):
+        self.titleLabel.setText(title)
+
+    def setContent(self, content: str):
+        self.contentLabel.setText(content)
+        self.contentLabel.setVisible(bool(content))
+
+    def setIconSize(self, width: int, height: int):
+        self.iconLabel.setFixedSize(width, height)
+
+    def paintEvent(self, e):
+        painter = QPainter(self)
+        painter.setRenderHints(QPainter.RenderHint.Antialiasing)
+
+        if qfw.isDarkTheme():
+            painter.setBrush(QColor(255, 255, 255, 13))
+            painter.setPen(QColor(0, 0, 0, 50))
+        else:
+            painter.setBrush(QColor(255, 255, 255, 170))
+            painter.setPen(QColor(0, 0, 0, 19))
+
+        painter.drawRoundedRect(self.rect().adjusted(1, 1, -1, -1), 6, 6)
+
+
+class FeaturesCard(QFrame):
+
+    clicked = pyqtSignal()
+
+    def __init__(self, parent=None, text: str = "AI自动填写"):
+        super().__init__(parent=parent)
+        self.iconLabel = SettingIconWidget(qfw.FluentIcon.LEAF, self)
+        self.titleLabel = QLabel("软件的技术特点", self)
+        self.contentLabel = QLabel("请输入...（100字）", self)
+        
+        self.mainLayout = QVBoxLayout(self)
+        self.mainLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.mainLayout.setSpacing(0)
+        self.mainLayout.setContentsMargins(0, 0, 0, 0)
+        
+        self.topWidget = QWidget()
+        self.topWidget.setFixedHeight(70)
+        self.topLayout = QHBoxLayout(self.topWidget)
+        
+        self.vBoxLayout = QVBoxLayout()
+
+        self.iconLabel.setFixedSize(16, 16)
+
+        self.topLayout.setSpacing(0)
+        self.topLayout.setContentsMargins(16, 0, 0, 0)
+        self.topLayout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+        self.vBoxLayout.setSpacing(0)
+        self.vBoxLayout.setContentsMargins(0, 0, 0, 0)
+        self.vBoxLayout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+
+        self.topLayout.addWidget(self.iconLabel, 0, Qt.AlignmentFlag.AlignLeft)
+        self.topLayout.addSpacing(16)
+
+        self.topLayout.addLayout(self.vBoxLayout)
+        self.vBoxLayout.addWidget(self.titleLabel, 0, Qt.AlignmentFlag.AlignLeft)
+        self.vBoxLayout.addWidget(self.contentLabel, 0, Qt.AlignmentFlag.AlignLeft)
+
+        self.topLayout.addSpacing(16)
+        self.topLayout.addStretch(1)
+        
+        self.mainLayout.addWidget(self.topWidget)
+
+        self.tags = ["APP", "游戏软件", "教育软件", "金融软件", "医疗软件", "地理信息软件", "云计算软件", "信息安全软件",
+                     "大数据软件", "人工智能软件", "VR软件", "5G软件", "小程序", "物联网软件", "智慧城市软件"] 
         self.tagLayout = qfw.FlowLayout()
         self.tagLayout.setContentsMargins(16, 0, 16, 0)
         for tag in self.tags:

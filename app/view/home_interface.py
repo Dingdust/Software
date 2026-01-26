@@ -3,7 +3,7 @@ from PyQt6.QtCore import Qt, pyqtSignal, QTimer
 from PyQt6.QtGui import QFont, QPainter, QPixmap
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QStackedWidget, QButtonGroup, QLabel
 
-from .custom_widget import EditSettingCard, DevLanguageCard
+from .custom_widget import EditSettingCard, DevLanguageCard, FeaturesCard
 
 
 class BaseSubPage(QWidget):
@@ -509,13 +509,7 @@ class SoftwareFeaturesInterface(BaseSubPage):
             self.scrollWidget
         )
 
-        # 软件的技术特点
-        self.featuresCard = EditSettingCard(
-            qfw.FluentIcon.LEAF,
-            "软件的技术特点",
-            "请输入...（100字）",
-            self.scrollWidget
-        )
+        self.featuresCard = FeaturesCard(self.scrollWidget)
 
         # 程序鉴别材料
         self.codeIdentifyCard = EditSettingCard(
@@ -600,11 +594,11 @@ class HomeInterface(QWidget):
         self.vBoxLayout.addWidget(self.stackedWidget)
 
         self.pages_info = [
-            ("features", "软件功能与特点", SoftwareFeaturesInterface),
+            # ("features", "软件功能与特点", SoftwareFeaturesInterface),
             ("identity", "选择办理身份", IdentitySelectionInterface),
             ("app_info", "软件申请信息", SoftwareAppInfoInterface),
             ("dev_info", "软件开发信息", SoftwareDevInfoInterface),
-            # ("features", "软件功能与特点", SoftwareFeaturesInterface),
+            ("features", "软件功能与特点", SoftwareFeaturesInterface),
             ("confirm", "确认信息", ConfirmationInterface),
             ("complete", "填报完成", CompletionInterface)
         ]
