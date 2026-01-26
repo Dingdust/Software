@@ -1,131 +1,12 @@
 import qfluentwidgets as qfw
-from PyQt6.QtCore import Qt, pyqtSignal, QTimer
-from PyQt6.QtGui import QFont, QPainter, QPixmap
+from PyQt6.QtGui import QFont
+from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QStackedWidget, QButtonGroup, QLabel
 
 import app.view.custom_widget as custom
 
 
-class BaseSubPage(QWidget):
-    
-    nextSignal = pyqtSignal()
-    prevSignal = pyqtSignal()
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self._parent = parent
-        self.backgroundPixmap = QPixmap("./resources/background.png")
-        
-        self.vBoxLayout = QVBoxLayout(self)
-        self.vBoxLayout.setSpacing(20)
-
-        self.scrollArea = qfw.SingleDirectionScrollArea(self)
-        self.scrollArea.setWidgetResizable(True)
-        self.scrollArea.setStyleSheet("background-color: transparent; border: none;")
-        
-        self.scrollWidget = QWidget()
-        self.scrollWidget.setStyleSheet("background-color: transparent;")
-        
-        self.contentLayout = QVBoxLayout(self.scrollWidget)
-        self.contentLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self.scrollArea.setWidget(self.scrollWidget)
-        
-        self.vBoxLayout.addWidget(self.scrollArea)
-
-        self.buttonLayout = QHBoxLayout()
-        self.prevBtn = qfw.PushButton("上一步", self)
-        self.prevBtn.setFixedWidth(120)
-        self.nextBtn = qfw.PrimaryPushButton("下一步", self)
-        self.nextBtn.setFixedWidth(120)
-        
-        self.prevBtn.clicked.connect(self.prevSignal)
-        self.nextBtn.clicked.connect(self.nextSignal)
-        
-        self.buttonLayout.addWidget(self.prevBtn)
-        self.buttonLayout.addSpacing(20)
-        self.buttonLayout.addWidget(self.nextBtn)
-        self.buttonLayout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        
-        self.vBoxLayout.addLayout(self.buttonLayout)
-
-    def show_info(
-        self, 
-        title: str = "提示",
-        content: str = "暂不支持本服务！"):
-        qfw.InfoBar.info(
-            title=title,
-            content=content,
-            orient=Qt.Orientation.Horizontal,
-            isClosable=True,
-            duration=1000,
-            position=qfw.InfoBarPosition.TOP_RIGHT,
-            parent=self._parent
-        )
-
-    def show_warning(
-        self, 
-        title: str = "提示",
-        content: str = "暂不支持本服务！"):
-        qfw.InfoBar.warning(
-            title=title,
-            content=content,
-            orient=Qt.Orientation.Horizontal,
-            isClosable=True,
-            duration=1000,
-            position=qfw.InfoBarPosition.TOP_RIGHT,
-            parent=self._parent
-        )
-
-    def show_error(
-        self, 
-        title: str = "提示",
-        content: str = "暂不支持本服务！"):
-        qfw.InfoBar.error(
-            title=title,
-            content=content,
-            orient=Qt.Orientation.Horizontal,
-            isClosable=True,
-            duration=1000,
-            position=qfw.InfoBarPosition.TOP_RIGHT,
-            parent=self._parent
-        )
-
-    def paintEvent(self, e):
-        super().paintEvent(e)
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
-        painter.setOpacity(0.08)
-        
-        pixmap = self.backgroundPixmap.scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
-        x = int((self.width() - pixmap.width()) / 2)
-        y = int((self.height() - pixmap.height()) / 2)
-        painter.drawPixmap(x, y, pixmap)
-
-class IdentityCard(qfw.ElevatedCardWidget):
-    
-    def __init__(self, icon, title, content, parent=None):
-        super().__init__(parent)
-        self._parent = parent
-        self.setClickEnabled(True)
-        self.setFixedSize(320, 240)
-        
-        self.vLayout = QVBoxLayout(self)
-        self.vLayout.setSpacing(20)
-        self.vLayout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        self.iconWidget = qfw.IconWidget(icon, self)
-        self.iconWidget.setFixedSize(64, 64)
-        
-        self.titleLabel = qfw.SubtitleLabel(title, self)
-        self.contentLabel = qfw.BodyLabel(content, self)
-        self.contentLabel.setTextColor(Qt.GlobalColor.gray, Qt.GlobalColor.gray)
-
-        self.vLayout.addWidget(self.iconWidget, 0, Qt.AlignmentFlag.AlignCenter)
-        self.vLayout.addWidget(self.titleLabel, 0, Qt.AlignmentFlag.AlignCenter)
-        self.vLayout.addWidget(self.contentLabel, 0, Qt.AlignmentFlag.AlignCenter)
-
-class IdentitySelectionInterface(BaseSubPage):
+class IdentitySelectionInterface(custom.BaseSubPage):
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -135,8 +16,8 @@ class IdentitySelectionInterface(BaseSubPage):
         self.cardLayout.setSpacing(64)
         self.cardLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         
-        self.applicantCard = IdentityCard(qfw.FluentIcon.PEOPLE, "我是申请人", "办理本人的软件著作权登记", self)
-        self.agentCard = IdentityCard(qfw.FluentIcon.MARKET, "我是代理人", "受他人委托办理软件著作权登记", self)
+        self.applicantCard = custom.IdentityCard(qfw.FluentIcon.PEOPLE, "我是申请人", "办理本人的软件著作权登记", self)
+        self.agentCard = custom.IdentityCard(qfw.FluentIcon.MARKET, "我是代理人", "受他人委托办理软件著作权登记", self)
         
         self.cardLayout.addWidget(self.applicantCard)
         self.cardLayout.addWidget(self.agentCard)
@@ -150,7 +31,8 @@ class IdentitySelectionInterface(BaseSubPage):
         self.prevBtn.hide()
         self.nextBtn.hide()
 
-class SoftwareAppInfoInterface(BaseSubPage):
+
+class SoftwareAppInfoInterface(custom.BaseSubPage):
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -269,7 +151,8 @@ class SoftwareAppInfoInterface(BaseSubPage):
         else:
             self.show_error(content="请检查【权利取得方式】是否填写正确！")
 
-class SoftwareDevInfoInterface(BaseSubPage):
+
+class SoftwareDevInfoInterface(custom.BaseSubPage):
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -424,7 +307,8 @@ class SoftwareDevInfoInterface(BaseSubPage):
             self.show_error(content="请检查【软件分类】是否填写正确！")
             self.classGroup.setFocus()
 
-class SoftwareFeaturesInterface(BaseSubPage):
+
+class SoftwareFeaturesInterface(custom.BaseSubPage):
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -511,12 +395,7 @@ class SoftwareFeaturesInterface(BaseSubPage):
 
         self.featuresCard = custom.FeaturesCard(self.scrollWidget)
 
-        self.codeIdentifyCard = custom.EditSettingCard(
-            qfw.FluentIcon.COMMAND_PROMPT,
-            "程序鉴别材料",
-            "请输入...（100字）",
-            self.scrollWidget
-        )
+        self.codeIdentifyCard = custom.CodeIdentityCard(self.scrollWidget)
 
         # 文档鉴别材料
         self.documentIdentifyCard = custom.EditSettingCard(
@@ -556,19 +435,22 @@ class SoftwareFeaturesInterface(BaseSubPage):
     def check_for_next(self):
         self.nextSignal.emit()
 
-class ConfirmationInterface(BaseSubPage):
+
+class ConfirmationInterface(custom.BaseSubPage):
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self._parent = parent
         self.contentLayout.addWidget(qfw.SubtitleLabel("请确认填报信息", self))
 
-class CompletionInterface(BaseSubPage):
+
+class CompletionInterface(custom.BaseSubPage):
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self._parent = parent
         self.contentLayout.addWidget(qfw.SubtitleLabel("填报已完成", self))
+
 
 class HomeInterface(QWidget):
     
