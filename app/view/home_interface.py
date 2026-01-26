@@ -3,7 +3,7 @@ from PyQt6.QtCore import Qt, pyqtSignal, QTimer
 from PyQt6.QtGui import QFont, QPainter, QPixmap
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QStackedWidget, QButtonGroup, QLabel
 
-from .custom_widget import EditSettingCard
+from .custom_widget import EditSettingCard, DevLanguageCard
 
 
 class BaseSubPage(QWidget):
@@ -472,13 +472,7 @@ class SoftwareFeaturesInterface(BaseSubPage):
             self.scrollWidget
         )
 
-        # 编程语言
-        self.devLanguageCard = EditSettingCard(
-            qfw.FluentIcon.LANGUAGE,
-            "编程语言",
-            "若有需要，请输入其他编程语言...（120字）",
-            self.scrollWidget
-        )
+        self.devLanguageCard = DevLanguageCard(self.scrollWidget)
 
         self.codeLineCard = qfw.SettingCard(
             qfw.FluentIcon.CODE,
