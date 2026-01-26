@@ -1,7 +1,7 @@
 import qfluentwidgets as qfw
 from PyQt6.QtCore import Qt, pyqtSignal, QTimer
 from PyQt6.QtGui import QFont, QPainter, QPixmap
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QStackedWidget, QButtonGroup
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QStackedWidget, QButtonGroup, QLabel
 
 from .custom_widget import EditSettingCard
 
@@ -437,7 +437,65 @@ class SoftwareFeaturesInterface(BaseSubPage):
             self.scrollWidget
         )
 
+        self.runHardwareEnvCard = EditSettingCard(
+            qfw.FluentIcon.IOT,
+            "运行的硬件环境",
+            "请填写运行的硬件环境（50字）",
+            self.scrollWidget
+        )
+
+        self.devOSEnvCard = EditSettingCard(
+            qfw.FluentIcon.INFO,
+            "开发该软件的操作系统",
+            "请填写开发该软件的操作系统（50字）",
+            self.scrollWidget
+        )
+
+        self.devEnvToolCard = EditSettingCard(
+            qfw.FluentIcon.LEAF,
+            "软件开发环境 / 开发工具",
+            "请填写软件开发环境 / 开发工具（50字）",
+            self.scrollWidget
+        )
+
+        self.runPlatformOSCard = EditSettingCard(
+            qfw.FluentIcon.GLOBE,
+            "该软件的运行平台 / 操作系统",
+            "请填写该软件的运行平台 / 操作系统（50字）",
+            self.scrollWidget
+        )
+
+        self.runEnvSoftwareCard = EditSettingCard(
+            qfw.FluentIcon.APPLICATION,
+            "软件运行支撑环境 / 支持软件",
+            "请填写软件运行支撑环境 / 支持软件（50字）",
+            self.scrollWidget
+        )
+
+        # 编程语言
+        pass
+
+        self.codeLineCard = qfw.SettingCard(
+            qfw.FluentIcon.CODE,
+            "源程序量",
+            "请输入源程序量的代码总行数",
+            self.scrollWidget
+        )
+        self.codeLineEdit = qfw.LineEdit(self.codeLineCard)
+        self.codeLineEdit.setPlaceholderText("请输入...")
+        self.codeLineEdit.setFixedWidth(160)
+        self.codeLineCard.hBoxLayout.addWidget(self.codeLineEdit)
+        self.codeLineCard.hBoxLayout.addSpacing(24)
+        self.codeLineCard.hBoxLayout.addWidget(QLabel("行", self.codeLineCard))
+        self.codeLineCard.hBoxLayout.addSpacing(16)
+
         self.contentLayout.addWidget(self.devHardwareEnvCard)
+        self.contentLayout.addWidget(self.runHardwareEnvCard)
+        self.contentLayout.addWidget(self.devOSEnvCard)
+        self.contentLayout.addWidget(self.devEnvToolCard)
+        self.contentLayout.addWidget(self.runPlatformOSCard)
+        self.contentLayout.addWidget(self.runEnvSoftwareCard)
+        self.contentLayout.addWidget(self.codeLineCard)
 
         self.nextBtn.clicked.disconnect()
         self.nextBtn.clicked.connect(self.check_for_next)
