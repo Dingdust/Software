@@ -3,7 +3,7 @@ from PyQt6.QtCore import Qt, pyqtSignal, QTimer
 from PyQt6.QtGui import QFont, QPainter, QPixmap
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QStackedWidget, QButtonGroup, QLabel
 
-from .custom_widget import EditSettingCard, DevLanguageCard, FeaturesCard
+import app.view.custom_widget as custom
 
 
 class BaseSubPage(QWidget):
@@ -430,49 +430,49 @@ class SoftwareFeaturesInterface(BaseSubPage):
         super().__init__(parent)
         self._parent = parent
         
-        self.devHardwareEnvCard = EditSettingCard(
+        self.devHardwareEnvCard = custom.EditSettingCard(
             qfw.FluentIcon.SETTING,
             "开发的硬件环境",
             "请填写开发的硬件环境（50字）",
             self.scrollWidget
         )
 
-        self.runHardwareEnvCard = EditSettingCard(
+        self.runHardwareEnvCard = custom.EditSettingCard(
             qfw.FluentIcon.IOT,
             "运行的硬件环境",
             "请填写运行的硬件环境（50字）",
             self.scrollWidget
         )
 
-        self.devOSEnvCard = EditSettingCard(
+        self.devOSEnvCard = custom.EditSettingCard(
             qfw.FluentIcon.INFO,
             "开发该软件的操作系统",
             "请填写开发该软件的操作系统（50字）",
             self.scrollWidget
         )
 
-        self.devEnvToolCard = EditSettingCard(
+        self.devEnvToolCard = custom.EditSettingCard(
             qfw.FluentIcon.DEVELOPER_TOOLS,
             "软件开发环境 / 开发工具",
             "请填写软件开发环境 / 开发工具（50字）",
             self.scrollWidget
         )
 
-        self.runPlatformOSCard = EditSettingCard(
+        self.runPlatformOSCard = custom.EditSettingCard(
             qfw.FluentIcon.GLOBE,
             "该软件的运行平台 / 操作系统",
             "请填写该软件的运行平台 / 操作系统（50字）",
             self.scrollWidget
         )
 
-        self.runEnvSoftwareCard = EditSettingCard(
+        self.runEnvSoftwareCard = custom.EditSettingCard(
             qfw.FluentIcon.APPLICATION,
             "软件运行支撑环境 / 支持软件",
             "请填写软件运行支撑环境 / 支持软件（50字）",
             self.scrollWidget
         )
 
-        self.devLanguageCard = DevLanguageCard(self.scrollWidget)
+        self.devLanguageCard = custom.DevLanguageCard(self.scrollWidget)
 
         self.codeLineCard = qfw.SettingCard(
             qfw.FluentIcon.CODE,
@@ -488,31 +488,30 @@ class SoftwareFeaturesInterface(BaseSubPage):
         self.codeLineCard.hBoxLayout.addWidget(QLabel("行", self.codeLineCard))
         self.codeLineCard.hBoxLayout.addSpacing(16)
 
-        self.devTargetCard = EditSettingCard(
+        self.devTargetCard = custom.EditSettingCard(
             qfw.FluentIcon.PIN,
             "开发目的",
             "请填写开发目的（50字）",
             self.scrollWidget
         )
 
-        self.TargetDomainCard = EditSettingCard(
+        self.TargetDomainCard = custom.EditSettingCard(
             qfw.FluentIcon.EDIT,
             "面向领域 / 行业",
             "请填写面向领域 / 行业（50字）",
             self.scrollWidget
         )
 
-        self.MainFunctionCard = EditSettingCard(
+        self.MainFunctionCard = custom.EditSettingCard(
             qfw.FluentIcon.SEND,
             "软件的主要功能",
             "请填写软件的主要功能（200字）",
             self.scrollWidget
         )
 
-        self.featuresCard = FeaturesCard(self.scrollWidget)
+        self.featuresCard = custom.FeaturesCard(self.scrollWidget)
 
-        # 程序鉴别材料
-        self.codeIdentifyCard = EditSettingCard(
+        self.codeIdentifyCard = custom.EditSettingCard(
             qfw.FluentIcon.COMMAND_PROMPT,
             "程序鉴别材料",
             "请输入...（100字）",
@@ -520,7 +519,7 @@ class SoftwareFeaturesInterface(BaseSubPage):
         )
 
         # 文档鉴别材料
-        self.documentIdentifyCard = EditSettingCard(
+        self.documentIdentifyCard = custom.EditSettingCard(
             qfw.FluentIcon.DICTIONARY_ADD,
             "文档鉴别材料",
             "请输入...（100字）",
@@ -528,7 +527,7 @@ class SoftwareFeaturesInterface(BaseSubPage):
         )
 
         # 其他相关证明文件
-        self.otherMaterialCard = EditSettingCard(
+        self.otherMaterialCard = custom.EditSettingCard(
             qfw.FluentIcon.FOLDER_ADD,
             "其他相关证明文件",
             "请输入...（100字）",
@@ -594,11 +593,11 @@ class HomeInterface(QWidget):
         self.vBoxLayout.addWidget(self.stackedWidget)
 
         self.pages_info = [
-            # ("features", "软件功能与特点", SoftwareFeaturesInterface),
+            ("features", "软件功能与特点", SoftwareFeaturesInterface),
             ("identity", "选择办理身份", IdentitySelectionInterface),
             ("app_info", "软件申请信息", SoftwareAppInfoInterface),
             ("dev_info", "软件开发信息", SoftwareDevInfoInterface),
-            ("features", "软件功能与特点", SoftwareFeaturesInterface),
+            # ("features", "软件功能与特点", SoftwareFeaturesInterface),
             ("confirm", "确认信息", ConfirmationInterface),
             ("complete", "填报完成", CompletionInterface)
         ]
