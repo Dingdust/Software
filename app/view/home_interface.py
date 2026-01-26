@@ -452,7 +452,7 @@ class SoftwareFeaturesInterface(BaseSubPage):
         )
 
         self.devEnvToolCard = EditSettingCard(
-            qfw.FluentIcon.LEAF,
+            qfw.FluentIcon.DEVELOPER_TOOLS,
             "软件开发环境 / 开发工具",
             "请填写软件开发环境 / 开发工具（50字）",
             self.scrollWidget
@@ -473,7 +473,12 @@ class SoftwareFeaturesInterface(BaseSubPage):
         )
 
         # 编程语言
-        pass
+        self.devLanguageCard = EditSettingCard(
+            qfw.FluentIcon.LANGUAGE,
+            "编程语言",
+            "若有需要，请输入其他编程语言...（120字）",
+            self.scrollWidget
+        )
 
         self.codeLineCard = qfw.SettingCard(
             qfw.FluentIcon.CODE,
@@ -489,13 +494,74 @@ class SoftwareFeaturesInterface(BaseSubPage):
         self.codeLineCard.hBoxLayout.addWidget(QLabel("行", self.codeLineCard))
         self.codeLineCard.hBoxLayout.addSpacing(16)
 
+        self.devTargetCard = EditSettingCard(
+            qfw.FluentIcon.PIN,
+            "开发目的",
+            "请填写开发目的（50字）",
+            self.scrollWidget
+        )
+
+        self.TargetDomainCard = EditSettingCard(
+            qfw.FluentIcon.EDIT,
+            "面向领域 / 行业",
+            "请填写面向领域 / 行业（50字）",
+            self.scrollWidget
+        )
+
+        self.MainFunctionCard = EditSettingCard(
+            qfw.FluentIcon.SEND,
+            "软件的主要功能",
+            "请填写软件的主要功能（200字）",
+            self.scrollWidget
+        )
+
+        # 软件的技术特点
+        self.featuresCard = EditSettingCard(
+            qfw.FluentIcon.LEAF,
+            "软件的技术特点",
+            "请输入...（100字）",
+            self.scrollWidget
+        )
+
+        # 程序鉴别材料
+        self.codeIdentifyCard = EditSettingCard(
+            qfw.FluentIcon.COMMAND_PROMPT,
+            "程序鉴别材料",
+            "请输入...（100字）",
+            self.scrollWidget
+        )
+
+        # 文档鉴别材料
+        self.documentIdentifyCard = EditSettingCard(
+            qfw.FluentIcon.DICTIONARY_ADD,
+            "文档鉴别材料",
+            "请输入...（100字）",
+            self.scrollWidget
+        )
+
+        # 其他相关证明文件
+        self.otherMaterialCard = EditSettingCard(
+            qfw.FluentIcon.FOLDER_ADD,
+            "其他相关证明文件",
+            "请输入...（100字）",
+            self.scrollWidget
+        )
+
         self.contentLayout.addWidget(self.devHardwareEnvCard)
         self.contentLayout.addWidget(self.runHardwareEnvCard)
         self.contentLayout.addWidget(self.devOSEnvCard)
         self.contentLayout.addWidget(self.devEnvToolCard)
         self.contentLayout.addWidget(self.runPlatformOSCard)
         self.contentLayout.addWidget(self.runEnvSoftwareCard)
+        self.contentLayout.addWidget(self.devLanguageCard)
         self.contentLayout.addWidget(self.codeLineCard)
+        self.contentLayout.addWidget(self.devTargetCard)
+        self.contentLayout.addWidget(self.TargetDomainCard)
+        self.contentLayout.addWidget(self.MainFunctionCard)
+        self.contentLayout.addWidget(self.featuresCard)
+        self.contentLayout.addWidget(self.codeIdentifyCard)
+        self.contentLayout.addWidget(self.documentIdentifyCard)
+        self.contentLayout.addWidget(self.otherMaterialCard)
 
         self.nextBtn.clicked.disconnect()
         self.nextBtn.clicked.connect(self.check_for_next)
