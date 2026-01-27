@@ -211,16 +211,6 @@ class EditSettingCard(QFrame):
         self.topLayout.addSpacing(16)
         self.button.clicked.connect(self.clicked)
 
-    def setTitle(self, title: str):
-        self.titleLabel.setText(title)
-
-    def setContent(self, content: str):
-        self.contentLabel.setText(content)
-        self.contentLabel.setVisible(bool(content))
-
-    def setIconSize(self, width: int, height: int):
-        self.iconLabel.setFixedSize(width, height)
-
     def paintEvent(self, e):
         painter = QPainter(self)
         painter.setRenderHints(QPainter.RenderHint.Antialiasing)
@@ -304,16 +294,6 @@ class DevLanguageCard(QFrame):
         self.topLayout.addSpacing(16)
         self.button.clicked.connect(self.clicked)
 
-    def setTitle(self, title: str):
-        self.titleLabel.setText(title)
-
-    def setContent(self, content: str):
-        self.contentLabel.setText(content)
-        self.contentLabel.setVisible(bool(content))
-
-    def setIconSize(self, width: int, height: int):
-        self.iconLabel.setFixedSize(width, height)
-
     def paintEvent(self, e):
         painter = QPainter(self)
         painter.setRenderHints(QPainter.RenderHint.Antialiasing)
@@ -396,16 +376,6 @@ class FeaturesCard(QFrame):
         self.topLayout.addSpacing(16)
         self.button.clicked.connect(self.clicked)
 
-    def setTitle(self, title: str):
-        self.titleLabel.setText(title)
-
-    def setContent(self, content: str):
-        self.contentLabel.setText(content)
-        self.contentLabel.setVisible(bool(content))
-
-    def setIconSize(self, width: int, height: int):
-        self.iconLabel.setFixedSize(width, height)
-
     def paintEvent(self, e):
         painter = QPainter(self)
         painter.setRenderHints(QPainter.RenderHint.Antialiasing)
@@ -420,7 +390,72 @@ class FeaturesCard(QFrame):
         painter.drawRoundedRect(self.rect().adjusted(1, 1, -1, -1), 6, 6)
 
 
-class CodeIdentityCard(qfw.ExpandGroupSettingCard):
+class CodeIdentityCard(QFrame):
 
     def __init__(self, parent=None):
-        super().__init__(qfw.FluentIcon.COMMAND_PROMPT, "程序鉴别材料", "请上传pdf格式。", parent)
+        super().__init__(parent=parent)
+        self.iconLabel = SettingIconWidget(qfw.FluentIcon.COMMAND_PROMPT, self)
+        self.titleLabel = QLabel("程序鉴别材料", self)
+        self.contentLabel = QLabel("源程序前连续的30页和后连续的30页", self)
+        
+        self.mainLayout = QVBoxLayout(self)
+        self.mainLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.mainLayout.setSpacing(0)
+        self.mainLayout.setContentsMargins(0, 0, 0, 0)
+        
+        self.topWidget = QWidget()
+        self.topWidget.setFixedHeight(70)
+        self.topLayout = QHBoxLayout(self.topWidget)
+        
+        self.vBoxLayout = QVBoxLayout()
+
+        self.iconLabel.setFixedSize(16, 16)
+
+        self.topLayout.setSpacing(0)
+        self.topLayout.setContentsMargins(16, 0, 0, 0)
+        self.topLayout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+        self.vBoxLayout.setSpacing(0)
+        self.vBoxLayout.setContentsMargins(0, 0, 0, 0)
+        self.vBoxLayout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+
+        self.topLayout.addWidget(self.iconLabel, 0, Qt.AlignmentFlag.AlignLeft)
+        self.topLayout.addSpacing(16)
+
+        self.topLayout.addLayout(self.vBoxLayout)
+        self.vBoxLayout.addWidget(self.titleLabel, 0, Qt.AlignmentFlag.AlignLeft)
+        self.vBoxLayout.addWidget(self.contentLabel, 0, Qt.AlignmentFlag.AlignLeft)
+
+        self.topLayout.addSpacing(16)
+        self.topLayout.addStretch(1)
+        
+        self.mainLayout.addWidget(self.topWidget)
+
+        self.fileLayout = QVBoxLayout()
+        self.fileLayoutContent = []
+        self.fileLayout.setContentsMargins(16, 0, 16, 0)
+
+        self.mainLayout.addLayout(self.fileLayout)
+
+        self.contentLabel.setObjectName('contentLabel')
+        qfw.FluentStyleSheet.SETTING_CARD.apply(self)
+
+        self.button = qfw.PushButton("上传PDF文档", self, qfw.FluentIcon.ADD_TO)
+        self.topLayout.addWidget(self.button, 0, Qt.AlignmentFlag.AlignRight)
+        self.topLayout.addSpacing(16)
+        self.button.clicked.connect(self.upload_file)
+
+    def paintEvent(self, e):
+        painter = QPainter(self)
+        painter.setRenderHints(QPainter.RenderHint.Antialiasing)
+
+        if qfw.isDarkTheme():
+            painter.setBrush(QColor(255, 255, 255, 13))
+            painter.setPen(QColor(0, 0, 0, 50))
+        else:
+            painter.setBrush(QColor(255, 255, 255, 170))
+            painter.setPen(QColor(0, 0, 0, 19))
+
+        painter.drawRoundedRect(self.rect().adjusted(1, 1, -1, -1), 6, 6)
+
+    def upload_file(self):
+        pass
