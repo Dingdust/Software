@@ -1,9 +1,10 @@
+import os
 from typing import Union
 
 import qfluentwidgets as qfw
-from PyQt6.QtCore import Qt, QRectF, pyqtSignal
-from PyQt6.QtGui import QColor, QIcon, QPainter, QPixmap
-from PyQt6.QtWidgets import QFrame, QHBoxLayout, QLabel, QVBoxLayout, QWidget
+from PyQt6.QtCore import Qt, QRectF, pyqtSignal, QUrl, QSize
+from PyQt6.QtGui import QColor, QIcon, QPainter, QPixmap, QDesktopServices, QFont
+from PyQt6.QtWidgets import QFrame, QHBoxLayout, QLabel, QVBoxLayout, QWidget, QFileDialog
 
 
 def drawIcon(icon, painter, rect, state=QIcon.State.Off, **attributes):
@@ -390,6 +391,71 @@ class FeaturesCard(QFrame):
         painter.drawRoundedRect(self.rect().adjusted(1, 1, -1, -1), 6, 6)
 
 
+class FileCard(QFrame):
+    
+    removed = pyqtSignal(str)
+
+    def __init__(self, file_path, parent=None):
+        super().__init__(parent)
+        self.file_path = file_path
+        
+        self.hBoxLayout = QHBoxLayout(self)
+        self.hBoxLayout.setContentsMargins(16, 12, 16, 0)
+        self.hBoxLayout.setSpacing(16)
+        self.hBoxLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        self.iconBtn = qfw.TransparentToolButton(qfw.FluentIcon.DOCUMENT, self)
+        self.iconBtn.setFixedSize(40, 40)
+        self.iconBtn.setIconSize(QSize(24, 24))
+        self.iconBtn.setFont(QFont("Segoe UI", 12))
+        self.iconBtn.clicked.connect(self.open_file)
+
+        self.infoWidget = QWidget()
+        self.infoLayout = QVBoxLayout(self.infoWidget)
+        self.infoLayout.setContentsMargins(0, 0, 0, 0)
+        self.infoLayout.setSpacing(0)
+        
+        self.nameLabel = QLabel(os.path.basename(file_path), self)
+        self.pathLabel = QLabel(file_path, self)
+        self.pathLabel.setStyleSheet("font-size: 12px; color: gray;")
+
+        self.infoLayout.addWidget(self.nameLabel)
+        self.infoLayout.addWidget(self.pathLabel)
+
+        self.deleteBtn = qfw.TransparentToolButton(qfw.FluentIcon.CLOSE, self)
+        self.deleteBtn.setFixedSize(24, 24)
+        self.deleteBtn.setIconSize(QSize(16, 16))
+        self.deleteBtn.setFont(QFont("Segoe UI", 12))
+        self.deleteBtn.clicked.connect(self.delete_card)
+
+        self.hBoxLayout.addWidget(self.iconBtn)
+        self.hBoxLayout.addWidget(self.infoWidget)
+        self.hBoxLayout.addStretch(1)
+        self.hBoxLayout.addWidget(self.deleteBtn)
+        
+        self.setFixedHeight(72)
+        
+    def paintEvent(self, e):
+        painter = QPainter(self)
+        painter.setRenderHints(QPainter.RenderHint.Antialiasing)
+
+        if qfw.isDarkTheme():
+            painter.setBrush(QColor(255, 255, 255, 13))
+            painter.setPen(QColor(0, 0, 0, 50))
+        else:
+            painter.setBrush(QColor(255, 255, 255, 170))
+            painter.setPen(QColor(0, 0, 0, 19))
+
+        painter.drawRoundedRect(self.rect().adjusted(1, 1, -1, -9), 6, 6)
+
+    def open_file(self):
+        QDesktopServices.openUrl(QUrl.fromLocalFile(self.file_path))
+
+    def delete_card(self):
+        self.removed.emit(self.file_path)
+        self.deleteLater()
+
+
 class CodeIdentityCard(QFrame):
 
     def __init__(self, parent=None):
@@ -458,4 +524,16 @@ class CodeIdentityCard(QFrame):
         painter.drawRoundedRect(self.rect().adjusted(1, 1, -1, -1), 6, 6)
 
     def upload_file(self):
-        pass
+        fname, _ = QFileDialog.getOpenFileName(self, "选择文件", "", "PDF Files (*.pdf)")
+        if fname:
+            if fname in self.fileLayoutContent:
+                return
+            
+            self.fileLayoutContent.append(fname)
+            card = FileCard(fname, self)
+            card.removed.connect(self.remove_file)
+            self.fileLayout.addWidget(card)
+
+    def remove_file(self, file_path):
+        if file_path in self.fileLayoutContent:
+            self.fileLayoutContent.remove(file_path)
