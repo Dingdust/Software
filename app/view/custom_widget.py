@@ -456,13 +456,13 @@ class FileCard(QFrame):
         self.deleteLater()
 
 
-class CodeIdentityCard(QFrame):
+class FileUploadCard(QFrame):
 
-    def __init__(self, parent=None):
+    def __init__(self, icon, title, content, parent=None):
         super().__init__(parent=parent)
-        self.iconLabel = SettingIconWidget(qfw.FluentIcon.COMMAND_PROMPT, self)
-        self.titleLabel = QLabel("程序鉴别材料", self)
-        self.contentLabel = QLabel("源程序前连续的30页和后连续的30页", self)
+        self.iconLabel = SettingIconWidget(icon, self)
+        self.titleLabel = QLabel(title, self)
+        self.contentLabel = QLabel(content, self)
         
         self.mainLayout = QVBoxLayout(self)
         self.mainLayout.setAlignment(Qt.AlignmentFlag.AlignTop)

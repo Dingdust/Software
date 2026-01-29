@@ -395,21 +395,24 @@ class SoftwareFeaturesInterface(custom.BaseSubPage):
 
         self.featuresCard = custom.FeaturesCard(self.scrollWidget)
 
-        self.codeIdentifyCard = custom.CodeIdentityCard(self.scrollWidget)
+        self.codeIdentifyCard = custom.FileUploadCard(
+            qfw.FluentIcon.COMMAND_PROMPT,
+            "程序鉴别材料",
+            "源程序前连续的30页和后连续的30页",
+            self.scrollWidget
+            )
 
-        # 文档鉴别材料
-        self.documentIdentifyCard = custom.EditSettingCard(
+        self.documentIdentifyCard = custom.FileUploadCard(
             qfw.FluentIcon.DICTIONARY_ADD,
             "文档鉴别材料",
-            "请输入...（100字）",
+            "提交任何一种文档的前连续的30页和后连续的30页",
             self.scrollWidget
         )
 
-        # 其他相关证明文件
-        self.otherMaterialCard = custom.EditSettingCard(
+        self.otherMaterialCard = custom.FileUploadCard(
             qfw.FluentIcon.FOLDER_ADD,
             "其他相关证明文件",
-            "请输入...（100字）",
+            "请上传其他相关证明文件（选填）",
             self.scrollWidget
         )
 
@@ -475,11 +478,10 @@ class HomeInterface(QWidget):
         self.vBoxLayout.addWidget(self.stackedWidget)
 
         self.pages_info = [
-            ("features", "软件功能与特点", SoftwareFeaturesInterface),
             ("identity", "选择办理身份", IdentitySelectionInterface),
             ("app_info", "软件申请信息", SoftwareAppInfoInterface),
             ("dev_info", "软件开发信息", SoftwareDevInfoInterface),
-            # ("features", "软件功能与特点", SoftwareFeaturesInterface),
+            ("features", "软件功能与特点", SoftwareFeaturesInterface),
             ("confirm", "确认信息", ConfirmationInterface),
             ("complete", "填报完成", CompletionInterface)
         ]
