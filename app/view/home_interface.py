@@ -1,3 +1,6 @@
+import os
+import json
+
 import qfluentwidgets as qfw
 from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt, QTimer
@@ -129,12 +132,30 @@ class SoftwareAppInfoInterface(custom.BaseSubPage):
         self.show_info()
         QTimer.singleShot(1000, lambda: self.allRightsRadio.setChecked(True))
 
+    def createWorkSpace(self) -> None:
+        if self._parent.applicationName is not None and os.path.exists(self._parent.applicationName):
+            os.removedirs(self._parent.applicationName)
+        self._parent.applicationName = self.fullNameEdit.text()
+        os.makedirs(self._parent.applicationName, exist_ok=True)
+
+    def writeInfo(self) -> None:
+        with open(os.path.join(self._parent.applicationName, "软件申请信息.json"), "w+", encoding="utf-8") as f:
+            json.dump({
+                "权利取得方式": self.originalRadio.text() if self.originalRadio.isChecked() else self.derivedRadio.text(),
+                "软件全称": self.fullNameEdit.text(),
+                "软件简称": self.abbrEdit.text(),
+                "版本号": self.versionEdit.text(),
+                "权利范围": self.allRightsRadio.text() if self.allRightsRadio.isChecked() else self.partRightsRadio.text()
+            }, f, ensure_ascii=False, indent=4)
+
     def check_for_next(self) -> None:
         if self.originalRadio.isChecked():
             if self.fullNameEdit.text() != "":
                 if len(self.abbrEdit.text()) <= len(self.fullNameEdit.text()):
                     if self.versionEdit.text() != "":
                         if self.allRightsRadio.isChecked():
+                            self.createWorkSpace()
+                            self.writeInfo()
                             self.nextSignal.emit()
                         else:
                             self.show_error(content="请检查【权利范围】是否填写正确！")
@@ -287,12 +308,28 @@ class SoftwareDevInfoInterface(custom.BaseSubPage):
         self.show_info()
         QTimer.singleShot(1000, lambda: self.unPublishRadio.setChecked(True))
 
+    def writeInfo(self) -> None:
+        devForm = self.singleRadio.text() if self.singleRadio.isChecked() \
+            else self.coopRadio.text() if self.coopRadio.isChecked() \
+            else self.delegateRadio.text() if self.delegateRadio.isChecked() \
+            else self.taskRadio.text()
+        with open(os.path.join(self._parent.applicationName, "软件开发信息.json"), "w+", encoding="utf-8") as f:
+            json.dump({
+                "软件分类": self.classGroup.text(),
+                "软件说明": self.originalRadio.text() if self.originalRadio.isChecked() else self.derivedRadio.text(),
+                "开发方式": devForm,
+                "开发完成日期": self.devFinishDate.date.toString("yyyy-MM-dd"),
+                "发表状态": self.publishRadio.text() if self.publishRadio.isChecked() else self.unPublishRadio.text(),
+                "著作权人": self.authorName.text(),
+            }, f, ensure_ascii=False, indent=4)
+
     def check_for_next(self) -> None:
         if self.classGroup.text() in self.classItems[1:]:
             if self.originalRadio.isChecked():
                 if self.singleRadio.isChecked():
                     if self.devFinishDate.date.isValid():
                         if self.unPublishRadio.isChecked():
+                            self.writeInfo()
                             self.nextSignal.emit()
                         else:
                             self.show_error(content="请检查【发表状态】是否填写正确！")
@@ -460,6 +497,7 @@ class HomeInterface(QWidget):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self._parent = parent
+        self.applicationName = None
         self.setObjectName("homeInterface")
         
         self.vBoxLayout = QVBoxLayout(self)
