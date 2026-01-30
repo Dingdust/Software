@@ -1,10 +1,15 @@
 import os
+import time
+import shutil
 from typing import Union
 
 import qfluentwidgets as qfw
 from PyQt6.QtCore import Qt, QRectF, pyqtSignal, QUrl, QSize
-from PyQt6.QtGui import QColor, QIcon, QPainter, QPixmap, QDesktopServices, QFont
-from PyQt6.QtWidgets import QFrame, QHBoxLayout, QLabel, QVBoxLayout, QWidget, QFileDialog
+from PyQt6.QtWidgets import QFrame, QHBoxLayout, QLabel, QVBoxLayout, QWidget, QFileDialog, QStackedWidget
+from PyQt6.QtGui import QColor, QIcon, QPainter, QPixmap, QDesktopServices, QFont, QDragEnterEvent, QDropEvent, QMouseEvent
+
+
+from qfluentwidgets.multimedia import StandardMediaPlayBar, VideoWidget
 
 
 def drawIcon(icon: Union[str, QIcon, qfw.FluentIconBase], painter: QPainter, rect: QRectF, state: QIcon.State = QIcon.State.Off, **attributes) -> None:
@@ -542,3 +547,206 @@ class FileUploadCard(QFrame):
     def remove_file(self, file_path: str) -> None:
         if file_path in self.fileLayoutContent:
             self.fileLayoutContent.remove(file_path)
+
+
+class FileUploadArea(QFrame):
+
+    fileMoved = pyqtSignal()
+
+    def __init__(self, parent=None) -> None:
+        super().__init__(parent=parent)
+        self.setAcceptDrops(True)
+        self.setStyleSheet("background-color: transparent;")
+        self.setFixedHeight(64)
+        
+        self.vBoxLayout = QVBoxLayout(self)
+        self.label = QLabel(self)
+        self.label.setPixmap(QPixmap(r"./resources/copyright.png"))
+        self.label.setScaledContents(True)
+        self.vBoxLayout.addWidget(self.label)
+        
+        self.treeWidget = None
+        self.rootPath = None
+        self.enabled = False
+
+    def setContext(self, treeWidget: qfw.TreeWidget, rootPath: str) -> None:
+        self.treeWidget = treeWidget
+        self.rootPath = rootPath
+        self.enabled = True
+
+    def dragEnterEvent(self, event: QDragEnterEvent) -> None:
+        if self.enabled and event.mimeData().hasUrls():
+            event.accept()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event: QDropEvent) -> None:
+        if not self.enabled or not self.rootPath:
+            return
+
+        targetPath = self._getCurrentTargetDir()
+        
+        files_moved = False
+        for url in event.mimeData().urls():
+            srcPath = url.toLocalFile()
+            if os.path.exists(srcPath):
+                dstPath = os.path.join(targetPath, os.path.basename(srcPath))
+                if srcPath != dstPath:
+                    shutil.copy(srcPath, dstPath)
+                    files_moved = True
+        
+        if files_moved:
+            self.fileMoved.emit()
+
+    def mousePressEvent(self, event: QMouseEvent) -> None:
+        if not self.enabled or not self.rootPath:
+            return
+            
+        filePath, _ = QFileDialog.getOpenFileName(self, "选择文件")
+        if filePath:
+            targetPath = self._getCurrentTargetDir()
+            dstPath = os.path.join(targetPath, os.path.basename(filePath))
+            if filePath != dstPath:
+                shutil.move(filePath, dstPath)
+                self.fileMoved.emit()
+        
+        super().mousePressEvent(event)
+
+    def _getCurrentTargetDir(self) -> str:
+        if not self.treeWidget:
+            return self.rootPath
+            
+        item = self.treeWidget.currentItem()
+        if item:
+            path = item.data(0, Qt.ItemDataRole.UserRole)
+            if os.path.isdir(path):
+                return path
+            else:
+                return os.path.dirname(path)
+        return self.rootPath
+
+
+class FileDetailStackWidget(QStackedWidget):
+
+    def __init__(self, parent=None) -> None:
+        super().__init__(parent=parent)
+        self.setObjectName("fileDetailStackWidget")
+        self.setStyleSheet("background-color: transparent;")
+
+        self.textEdit = qfw.TextEdit(self)
+        self.textEdit.setReadOnly(True)
+
+        self.imageContainer = QWidget(self)
+        self.imageLayout = QVBoxLayout(self.imageContainer)
+        self.imageLayout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.imageLabel = qfw.ImageLabel(self)
+        self.imageLabel.setBorderRadius(8, 8, 8, 8)
+        self.imageLayout.addWidget(self.imageLabel)
+
+        self.audioContainer = QWidget(self)
+        self.audioLayout = QVBoxLayout(self.audioContainer)
+        self.audioLayout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.videoWidget = VideoWidget(self)
+        self.mediaPlayer = self.videoWidget.player
+
+        self.mediaPlayBar = StandardMediaPlayBar(self)
+        self.audioLayout.addWidget(self.mediaPlayBar)
+        self.mediaPlayBar.setFixedWidth(600)
+
+        self.mediaPlayBar.playButton.clicked.connect(self.toggleAudioPlayState)
+        self.mediaPlayBar.progressSlider.valueChanged.connect(self.onSliderValueChanged)
+        self.mediaPlayer.positionChanged.connect(self.onAudioPositionChanged)
+        self.mediaPlayer.durationChanged.connect(self.onAudioDurationChanged)
+        self.mediaPlayer.playbackStateChanged.connect(self.onAudioStateChanged)
+
+        self.defaultInfoLabel = QLabel(self)
+        self.defaultInfoLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.defaultInfoLabel.setStyleSheet("font-size: 14px; color: #666;")
+
+        self.addWidget(self.textEdit)
+        self.addWidget(self.imageContainer)
+        self.addWidget(self.audioContainer)
+        self.addWidget(self.videoWidget)
+        self.addWidget(self.defaultInfoLabel)
+
+    def toggleAudioPlayState(self):
+        if self.mediaPlayer.playbackState() == self.mediaPlayer.PlaybackState.PlayingState:
+            self.mediaPlayer.pause()
+        else:
+            self.mediaPlayer.play()
+
+    def onAudioStateChanged(self, state):
+        self.mediaPlayBar.playButton.setPlay(state == self.mediaPlayer.PlaybackState.PlayingState)
+
+    def onAudioPositionChanged(self, position):
+        self.mediaPlayBar.progressSlider.setValue(position)
+        try:
+            self.mediaPlayBar.updateTime(position, self.mediaPlayer.duration())
+        except AttributeError:
+            pass 
+
+    def onAudioDurationChanged(self, duration):
+        self.mediaPlayBar.progressSlider.setRange(0, duration)
+        try:
+            self.mediaPlayBar.updateTime(self.mediaPlayer.position(), duration)
+        except AttributeError:
+            pass
+
+    def onSliderValueChanged(self, value):
+        if self.mediaPlayer.position() != value:
+            self.mediaPlayer.setPosition(value)
+
+    def updateFile(self, path: str):
+        self.mediaPlayer.stop()
+        self.videoWidget.pause()
+
+        if not os.path.exists(path):
+            self.defaultInfoLabel.setText("File not found.")
+            self.setCurrentIndex(4)
+            return
+
+        if os.path.isdir(path):
+            self.showDefaultInfo(path)
+            return
+
+        ext = os.path.splitext(path)[1].lower()
+
+        if ext in ['.txt', '.py', '.json', '.md', '.xml', '.log', '.c', '.cpp', '.h', '.java', '.js', '.html', '.css', '.ini', '.sh', '.bat']:
+            try:
+                with open(path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                self.textEdit.setText(content)
+                self.setCurrentIndex(0)
+            except Exception:
+                self.showDefaultInfo(path)
+
+        elif ext in ['.png', '.jpg', '.jpeg', '.bmp', '.gif', '.ico', '.svg']:
+            self.imageLabel.setImage(path)
+            self.imageLabel.setScaledSize(QSize(600, 450))
+            self.setCurrentIndex(1)
+
+        elif ext in ['.mp3', '.wav', '.ogg', '.flac', '.m4a']:
+            self.mediaPlayer.setSource(QUrl.fromLocalFile(path))
+            self.setCurrentIndex(2)
+            self.mediaPlayer.play()
+
+        elif ext in ['.mp4', '.avi', '.mkv', '.mov', '.wmv']:
+            self.videoWidget.setVideo(QUrl.fromLocalFile(path))
+            self.setCurrentIndex(3)
+            self.videoWidget.play()
+
+        else:
+            self.showDefaultInfo(path)
+
+    def showDefaultInfo(self, path):
+        try:
+            size = os.path.getsize(path)
+            ctime = os.path.getctime(path)
+            time_str = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(ctime))
+            info = f"Path: {path}\nSize: {size} bytes\nCreated: {time_str}"
+        except Exception:
+            info = f"Path: {path}"
+
+        self.defaultInfoLabel.setText(info)
+        self.setCurrentIndex(4)

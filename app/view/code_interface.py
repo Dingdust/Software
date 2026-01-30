@@ -1,94 +1,10 @@
 import os
-import shutil
 
 import qfluentwidgets as qfw
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QDragEnterEvent, QDropEvent, QPixmap, QMouseEvent
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QFileDialog, QFrame, QLabel, QTreeWidgetItem
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QFileDialog, QFrame, QTreeWidgetItem
 
-
-class CustomArea(QFrame):
-
-    fileMoved = pyqtSignal()
-
-    def __init__(self, parent=None) -> None:
-        super().__init__(parent=parent)
-        self.setAcceptDrops(True)
-        self.setStyleSheet("background-color: transparent;")
-        self.setFixedHeight(64)
-        
-        self.vBoxLayout = QVBoxLayout(self)
-        self.label = QLabel(self)
-        self.label.setPixmap(QPixmap(r"./resources/copyright.png"))
-        self.label.setScaledContents(True)
-        self.vBoxLayout.addWidget(self.label)
-        
-        self.treeWidget = None
-        self.rootPath = None
-        self.enabled = False
-
-    def setContext(self, treeWidget: qfw.TreeWidget, rootPath: str) -> None:
-        self.treeWidget = treeWidget
-        self.rootPath = rootPath
-        self.enabled = True
-
-    def dragEnterEvent(self, event: QDragEnterEvent) -> None:
-        if self.enabled and event.mimeData().hasUrls():
-            event.accept()
-        else:
-            event.ignore()
-
-    def dropEvent(self, event: QDropEvent) -> None:
-        if not self.enabled or not self.rootPath:
-            return
-
-        targetPath = self._getCurrentTargetDir()
-        
-        files_moved = False
-        for url in event.mimeData().urls():
-            srcPath = url.toLocalFile()
-            if os.path.exists(srcPath):
-                try:
-                    dstPath = os.path.join(targetPath, os.path.basename(srcPath))
-                    if srcPath != dstPath:
-                        shutil.copy(srcPath, dstPath)
-                        files_moved = True
-                except Exception as e:
-                    print(f"Error moving file {srcPath}: {e}")
-        
-        if files_moved:
-            self.fileMoved.emit()
-
-    def mousePressEvent(self, event: QMouseEvent) -> None:
-        if not self.enabled or not self.rootPath:
-            return
-            
-        filePath, _ = QFileDialog.getOpenFileName(self, "选择文件")
-        if filePath:
-            targetPath = self._getCurrentTargetDir()
-            try:
-                dstPath = os.path.join(targetPath, os.path.basename(filePath))
-                if filePath != dstPath:
-                    shutil.move(filePath, dstPath)
-                    self.fileMoved.emit()
-            except Exception as e:
-                print(f"Error moving file {filePath}: {e}")
-        
-        super().mousePressEvent(event)
-
-    def _getCurrentTargetDir(self) -> str:
-        if not self.treeWidget:
-            return self.rootPath
-            
-        item = self.treeWidget.currentItem()
-        if item:
-            path = item.data(0, Qt.ItemDataRole.UserRole)
-            if os.path.isdir(path):
-                return path
-            else:
-                return os.path.dirname(path)
-        return self.rootPath
-
+import app.view.custom_widget as custom
 
 class CodeInterface(QWidget):
 
@@ -104,13 +20,12 @@ class CodeInterface(QWidget):
         self.leftContainer.setFixedWidth(200)
         self.leftLayout = QVBoxLayout(self.leftContainer)
         self.leftLayout.setContentsMargins(8, 8, 8, 8)
-        
+
         self.rightContainer = QFrame(self)
         self.rightLayout = QVBoxLayout(self.rightContainer)
-        self.rightLayout.setContentsMargins(20, 20, 20, 20)
-        self.fileInfoLabel = QLabel("Select a file to view details", self.rightContainer)
-        self.fileInfoLabel.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
-        self.rightLayout.addWidget(self.fileInfoLabel)
+        self.rightLayout.setContentsMargins(16, 16, 16, 16)
+        self.fileDetailStackWidget = custom.FileDetailStackWidget(self.rightContainer)
+        self.rightLayout.addWidget(self.fileDetailStackWidget)
         
         self.hBoxLayout.addWidget(self.leftContainer)
         self.hBoxLayout.addWidget(self.rightContainer)
@@ -118,7 +33,7 @@ class CodeInterface(QWidget):
         self._initLeftPanel()
 
     def _initLeftPanel(self) -> None:
-        self.openFolderBtn = qfw.PrimaryPushButton("打开文件夹", self.leftContainer)
+        self.openFolderBtn = qfw.PrimaryPushButton(qfw.FluentIcon.FOLDER, "打开文件夹", self.leftContainer)
         self.openFolderBtn.clicked.connect(self._onOpenFolderClicked)
         self.leftLayout.addWidget(self.openFolderBtn)
         
@@ -128,7 +43,7 @@ class CodeInterface(QWidget):
         self.treeWidget.itemClicked.connect(self._onTreeItemClicked)
         self.leftLayout.addWidget(self.treeWidget)
         
-        self.customArea = CustomArea(self.leftContainer)
+        self.customArea = custom.FileUploadArea(self.leftContainer)
         self.customArea.fileMoved.connect(self._refreshTree)
         self.leftLayout.addWidget(self.customArea, 0, Qt.AlignmentFlag.AlignBottom)
         
@@ -176,15 +91,4 @@ class CodeInterface(QWidget):
         self._showFileInfo(path)
 
     def _showFileInfo(self, path: str) -> None:
-        if not os.path.exists(path):
-            self.fileInfoLabel.setText("File not found.")
-            return
-            
-        info = f"Path: {path}\n"
-        info += f"Size: {os.path.getsize(path)} bytes\n"
-        if os.path.isdir(path):
-            info += "Type: Directory"
-        else:
-            info += "Type: File"
-            
-        self.fileInfoLabel.setText(info)
+        self.fileDetailStackWidget.updateFile(path)
