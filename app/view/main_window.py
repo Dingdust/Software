@@ -26,7 +26,7 @@ class MainWindow(qfw.FluentWindow):
 
     def initWindow(self) -> None:
         self.resize(960, 640)
-        self.setWindowIcon(QIcon("./resources/logo.jpg"))
+        self.setWindowIcon(QIcon(r"./resources/logo.jpg"))
         self.setWindowTitle("易智著——软件著作权材料生成工具")
         self.navigationInterface.setExpandWidth(150)
 

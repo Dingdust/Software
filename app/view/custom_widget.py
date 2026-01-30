@@ -25,7 +25,7 @@ class BaseSubPage(QWidget):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self._parent = parent
-        self.backgroundPixmap = QPixmap("./resources/background.png")
+        self.backgroundPixmap = QPixmap(r"./resources/background.png")
         
         self.vBoxLayout = QVBoxLayout(self)
         self.vBoxLayout.setSpacing(20)
