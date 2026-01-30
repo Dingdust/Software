@@ -8,7 +8,7 @@ import app.view.custom_widget as custom
 
 class IdentitySelectionInterface(custom.BaseSubPage):
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self._parent = parent
         
@@ -34,7 +34,7 @@ class IdentitySelectionInterface(custom.BaseSubPage):
 
 class SoftwareAppInfoInterface(custom.BaseSubPage):
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self._parent = parent
         
@@ -121,15 +121,15 @@ class SoftwareAppInfoInterface(custom.BaseSubPage):
         self.nextBtn.clicked.disconnect()
         self.nextBtn.clicked.connect(self.check_for_next)
 
-    def onDerivedClicked(self):
+    def onDerivedClicked(self) -> None:
         self.show_info()
         QTimer.singleShot(1000, lambda: self.originalRadio.setChecked(True))
 
-    def onPartClicked(self):
+    def onPartClicked(self) -> None:
         self.show_info()
         QTimer.singleShot(1000, lambda: self.allRightsRadio.setChecked(True))
 
-    def check_for_next(self):
+    def check_for_next(self) -> None:
         if self.originalRadio.isChecked():
             if self.fullNameEdit.text() != "":
                 if len(self.abbrEdit.text()) <= len(self.fullNameEdit.text()):
@@ -154,7 +154,7 @@ class SoftwareAppInfoInterface(custom.BaseSubPage):
 
 class SoftwareDevInfoInterface(custom.BaseSubPage):
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self._parent = parent
         
@@ -275,19 +275,19 @@ class SoftwareDevInfoInterface(custom.BaseSubPage):
         self.nextBtn.clicked.disconnect()
         self.nextBtn.clicked.connect(self.check_for_next)
 
-    def onDerivedClicked(self):
+    def onDerivedClicked(self) -> None:
         self.show_info()
         QTimer.singleShot(1000, lambda: self.originalRadio.setChecked(True))
 
-    def onUnSupDevFormClicked(self):
+    def onUnSupDevFormClicked(self) -> None:
         self.show_info()
         QTimer.singleShot(1000, lambda: self.singleRadio.setChecked(True))
 
-    def onPublishClicked(self):
+    def onPublishClicked(self) -> None:
         self.show_info()
         QTimer.singleShot(1000, lambda: self.unPublishRadio.setChecked(True))
 
-    def check_for_next(self):
+    def check_for_next(self) -> None:
         if self.classGroup.text() in self.classItems[1:]:
             if self.originalRadio.isChecked():
                 if self.singleRadio.isChecked():
@@ -310,7 +310,7 @@ class SoftwareDevInfoInterface(custom.BaseSubPage):
 
 class SoftwareFeaturesInterface(custom.BaseSubPage):
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self._parent = parent
         
@@ -435,13 +435,13 @@ class SoftwareFeaturesInterface(custom.BaseSubPage):
         self.nextBtn.clicked.disconnect()
         self.nextBtn.clicked.connect(self.check_for_next)
 
-    def check_for_next(self):
+    def check_for_next(self) -> None:
         self.nextSignal.emit()
 
 
 class ConfirmationInterface(custom.BaseSubPage):
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self._parent = parent
         self.contentLayout.addWidget(qfw.SubtitleLabel("请确认填报信息", self))
@@ -449,7 +449,7 @@ class ConfirmationInterface(custom.BaseSubPage):
 
 class CompletionInterface(custom.BaseSubPage):
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self._parent = parent
         self.contentLayout.addWidget(qfw.SubtitleLabel("填报已完成", self))
@@ -457,7 +457,7 @@ class CompletionInterface(custom.BaseSubPage):
 
 class HomeInterface(QWidget):
     
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self._parent = parent
         self.setObjectName("homeInterface")
@@ -505,13 +505,13 @@ class HomeInterface(QWidget):
 
         self.breadcrumb.currentItemChanged.connect(self.switchToPage)
 
-    def switchToPage(self, routeKey):
+    def switchToPage(self, routeKey: str) -> None:
         if routeKey in self.route_keys:
             index = self.route_keys.index(routeKey)
             self.added_keys = self.route_keys[:index+1]
             self.stackedWidget.setCurrentIndex(index)
 
-    def nextPage(self):
+    def nextPage(self) -> None:
         current_idx = self.stackedWidget.currentIndex()
         if current_idx < self.stackedWidget.count() - 1:
             next_idx = current_idx + 1
@@ -522,7 +522,7 @@ class HomeInterface(QWidget):
             self.breadcrumb.setCurrentItem(key)
             self.stackedWidget.setCurrentIndex(next_idx)
 
-    def prevPage(self):
+    def prevPage(self) -> None:
         current_idx = self.stackedWidget.currentIndex()
         if current_idx > 0:
             prev_idx = current_idx - 1

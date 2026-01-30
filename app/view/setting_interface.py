@@ -3,9 +3,10 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout
 
 from app.common.config import cfg
 
+
 class SettingInterface(qfw.ScrollArea):
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:
         super().__init__(parent=parent)
         self._parent = parent
         self.setWidgetResizable(True)
@@ -102,12 +103,12 @@ class SettingInterface(qfw.ScrollArea):
 
         self.vBoxLayout.addStretch(1)
 
-    def __connectSignalToSlot(self):
+    def __connectSignalToSlot(self) -> None:
         self.baseUrlEdit.editingFinished.connect(self.__saveApiConfig)
         self.modelNameEdit.editingFinished.connect(self.__saveApiConfig)
         self.apiKeyEdit.editingFinished.connect(self.__saveApiConfig)
 
-    def __saveApiConfig(self):
+    def __saveApiConfig(self) -> None:
         cfg.set(cfg.base_url, self.baseUrlEdit.text())
         cfg.set(cfg.model_name, self.modelNameEdit.text())
         cfg.set(cfg.api_key, self.apiKeyEdit.text())

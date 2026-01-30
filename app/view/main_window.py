@@ -11,7 +11,7 @@ from .setting_interface import SettingInterface
 
 class MainWindow(qfw.FluentWindow):
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         qfw.setTheme(cfg.theme.value)
 
@@ -24,13 +24,13 @@ class MainWindow(qfw.FluentWindow):
 
         self.initNavigation()
 
-    def initWindow(self):
+    def initWindow(self) -> None:
         self.resize(960, 640)
         self.setWindowIcon(QIcon("./resources/logo.jpg"))
         self.setWindowTitle("易智著——软件著作权材料生成工具")
         self.navigationInterface.setExpandWidth(150)
 
-    def initNavigation(self):
+    def initNavigation(self) -> None:
         self.addSubInterface(self.homeInterface, qfw.FluentIcon.HOME, "登记申请")
         self.addSubInterface(self.manualInterface, qfw.FluentIcon.BOOK_SHELF, "说明手册")
         self.addSubInterface(self.codeInterface, qfw.FluentIcon.CODE, "软件代码")
@@ -48,5 +48,5 @@ class MainWindow(qfw.FluentWindow):
         self.addSubInterface(self.settingInterface, qfw.FluentIcon.SETTING, "设置", position=qfw.NavigationItemPosition.BOTTOM)
 
     @staticmethod
-    def openCopyrightWebsite():
+    def openCopyrightWebsite() -> None:
         QDesktopServices.openUrl(QUrl("https://register.ccopyright.com.cn/login.html"))

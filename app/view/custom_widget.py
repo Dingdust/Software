@@ -7,7 +7,7 @@ from PyQt6.QtGui import QColor, QIcon, QPainter, QPixmap, QDesktopServices, QFon
 from PyQt6.QtWidgets import QFrame, QHBoxLayout, QLabel, QVBoxLayout, QWidget, QFileDialog
 
 
-def drawIcon(icon, painter, rect, state=QIcon.State.Off, **attributes):
+def drawIcon(icon: Union[str, QIcon, qfw.FluentIconBase], painter: QPainter, rect: QRectF, state: QIcon.State = QIcon.State.Off, **attributes) -> None:
     if isinstance(icon, qfw.FluentIconBase):
         icon.render(painter, rect, **attributes)
     elif isinstance(icon, qfw.Icon):
@@ -22,7 +22,7 @@ class BaseSubPage(QWidget):
     nextSignal = pyqtSignal()
     prevSignal = pyqtSignal()
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self._parent = parent
         self.backgroundPixmap = QPixmap("./resources/background.png")
@@ -62,7 +62,7 @@ class BaseSubPage(QWidget):
     def show_info(
         self, 
         title: str = "提示",
-        content: str = "暂不支持本服务！"):
+        content: str = "暂不支持本服务！") -> None:
         qfw.InfoBar.info(
             title=title,
             content=content,
@@ -76,7 +76,7 @@ class BaseSubPage(QWidget):
     def show_warning(
         self, 
         title: str = "提示",
-        content: str = "暂不支持本服务！"):
+        content: str = "暂不支持本服务！") -> None:
         qfw.InfoBar.warning(
             title=title,
             content=content,
@@ -90,7 +90,7 @@ class BaseSubPage(QWidget):
     def show_error(
         self, 
         title: str = "提示",
-        content: str = "暂不支持本服务！"):
+        content: str = "暂不支持本服务！") -> None:
         qfw.InfoBar.error(
             title=title,
             content=content,
@@ -101,7 +101,7 @@ class BaseSubPage(QWidget):
             parent=self._parent
         )
 
-    def paintEvent(self, e):
+    def paintEvent(self, e) -> None:
         super().paintEvent(e)
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -116,7 +116,7 @@ class BaseSubPage(QWidget):
 
 class IdentityCard(qfw.ElevatedCardWidget):
     
-    def __init__(self, icon, title, content, parent=None):
+    def __init__(self, icon: Union[str, QIcon, qfw.FluentIconBase], title: str, content: str = None, parent=None) -> None:
         super().__init__(parent)
         self._parent = parent
         self.setClickEnabled(True)
@@ -140,7 +140,7 @@ class IdentityCard(qfw.ElevatedCardWidget):
 
 class SettingIconWidget(qfw.IconWidget):
 
-    def paintEvent(self, e):
+    def paintEvent(self, e) -> None:
         painter = QPainter(self)
 
         if not self.isEnabled():
@@ -154,8 +154,9 @@ class EditSettingCard(QFrame):
 
     clicked = pyqtSignal()
 
-    def __init__(self, icon: Union[str, QIcon, qfw.FluentIconBase], title: str, content=None, parent=None, text: str = "AI自动填写"):
+    def __init__(self, icon: Union[str, QIcon, qfw.FluentIconBase], title: str, content: str = None, parent=None, text: str = "AI自动填写") -> None:
         super().__init__(parent=parent)
+        self._parent = parent
         self.iconLabel = SettingIconWidget(icon, self)
         self.titleLabel = QLabel(title, self)
         self.contentLabel = QLabel(content or '', self)
@@ -212,7 +213,7 @@ class EditSettingCard(QFrame):
         self.topLayout.addSpacing(16)
         self.button.clicked.connect(self.clicked)
 
-    def paintEvent(self, e):
+    def paintEvent(self, e) -> None:
         painter = QPainter(self)
         painter.setRenderHints(QPainter.RenderHint.Antialiasing)
 
@@ -230,8 +231,9 @@ class DevLanguageCard(QFrame):
 
     clicked = pyqtSignal()
 
-    def __init__(self, parent=None, text: str = "AI自动填写"):
+    def __init__(self, parent=None) -> None:
         super().__init__(parent=parent)
+        self._parent = parent
         self.iconLabel = SettingIconWidget(qfw.FluentIcon.LANGUAGE, self)
         self.titleLabel = QLabel("编程语言", self)
         self.contentLabel = QLabel("若有需要，请输入其他编程语言...（120字）", self)
@@ -290,12 +292,12 @@ class DevLanguageCard(QFrame):
         self.contentLabel.setObjectName('contentLabel')
         qfw.FluentStyleSheet.SETTING_CARD.apply(self)
 
-        self.button = qfw.PushButton(text, self, qfw.FluentIcon.EDIT)
+        self.button = qfw.PushButton("AI自动填写", self, qfw.FluentIcon.EDIT)
         self.topLayout.addWidget(self.button, 0, Qt.AlignmentFlag.AlignRight)
         self.topLayout.addSpacing(16)
         self.button.clicked.connect(self.clicked)
 
-    def paintEvent(self, e):
+    def paintEvent(self, e) -> None:
         painter = QPainter(self)
         painter.setRenderHints(QPainter.RenderHint.Antialiasing)
 
@@ -313,8 +315,9 @@ class FeaturesCard(QFrame):
 
     clicked = pyqtSignal()
 
-    def __init__(self, parent=None, text: str = "AI自动填写"):
+    def __init__(self, parent=None) -> None:
         super().__init__(parent=parent)
+        self._parent = parent
         self.iconLabel = SettingIconWidget(qfw.FluentIcon.LEAF, self)
         self.titleLabel = QLabel("软件的技术特点", self)
         self.contentLabel = QLabel("请输入...（100字）", self)
@@ -372,12 +375,12 @@ class FeaturesCard(QFrame):
         self.contentLabel.setObjectName('contentLabel')
         qfw.FluentStyleSheet.SETTING_CARD.apply(self)
 
-        self.button = qfw.PushButton(text, self, qfw.FluentIcon.EDIT)
+        self.button = qfw.PushButton("AI自动填写", self, qfw.FluentIcon.EDIT)
         self.topLayout.addWidget(self.button, 0, Qt.AlignmentFlag.AlignRight)
         self.topLayout.addSpacing(16)
         self.button.clicked.connect(self.clicked)
 
-    def paintEvent(self, e):
+    def paintEvent(self, e) -> None:
         painter = QPainter(self)
         painter.setRenderHints(QPainter.RenderHint.Antialiasing)
 
@@ -395,9 +398,10 @@ class FileCard(QFrame):
     
     removed = pyqtSignal(str)
 
-    def __init__(self, file_path, parent=None):
+    def __init__(self, file_path: str, parent=None) -> None:
         super().__init__(parent)
         self.file_path = file_path
+        self._parent = parent
         
         self.hBoxLayout = QHBoxLayout(self)
         self.hBoxLayout.setContentsMargins(16, 12, 16, 0)
@@ -435,7 +439,7 @@ class FileCard(QFrame):
         
         self.setFixedHeight(72)
         
-    def paintEvent(self, e):
+    def paintEvent(self, e) -> None:
         painter = QPainter(self)
         painter.setRenderHints(QPainter.RenderHint.Antialiasing)
 
@@ -448,18 +452,19 @@ class FileCard(QFrame):
 
         painter.drawRoundedRect(self.rect().adjusted(1, 1, -1, -9), 6, 6)
 
-    def open_file(self):
+    def open_file(self) -> None:
         QDesktopServices.openUrl(QUrl.fromLocalFile(self.file_path))
 
-    def delete_card(self):
+    def delete_card(self) -> None:
         self.removed.emit(self.file_path)
         self.deleteLater()
 
 
 class FileUploadCard(QFrame):
 
-    def __init__(self, icon, title, content, parent=None):
+    def __init__(self, icon: Union[str, QIcon, qfw.FluentIconBase], title: str, content: str = None, parent=None):
         super().__init__(parent=parent)
+        self._parent = parent
         self.iconLabel = SettingIconWidget(icon, self)
         self.titleLabel = QLabel(title, self)
         self.contentLabel = QLabel(content, self)
@@ -510,7 +515,7 @@ class FileUploadCard(QFrame):
         self.topLayout.addSpacing(16)
         self.button.clicked.connect(self.upload_file)
 
-    def paintEvent(self, e):
+    def paintEvent(self, e) -> None:
         painter = QPainter(self)
         painter.setRenderHints(QPainter.RenderHint.Antialiasing)
 
@@ -523,7 +528,7 @@ class FileUploadCard(QFrame):
 
         painter.drawRoundedRect(self.rect().adjusted(1, 1, -1, -1), 6, 6)
 
-    def upload_file(self):
+    def upload_file(self) -> None:
         fname, _ = QFileDialog.getOpenFileName(self, "选择文件", "", "PDF Files (*.pdf)")
         if fname:
             if fname in self.fileLayoutContent:
@@ -534,6 +539,6 @@ class FileUploadCard(QFrame):
             card.removed.connect(self.remove_file)
             self.fileLayout.addWidget(card)
 
-    def remove_file(self, file_path):
+    def remove_file(self, file_path: str) -> None:
         if file_path in self.fileLayoutContent:
             self.fileLayoutContent.remove(file_path)

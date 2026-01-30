@@ -10,6 +10,7 @@ class Config(qfw.QConfig):
     theme = qfw.OptionsConfigItem(
         "UI", "Theme", qfw.Theme.AUTO, qfw.OptionsValidator(qfw.Theme), serializer=qfw.EnumSerializer(qfw.Theme))
 
+
 cfg = Config()
 _config_path = os.path.join(os.path.dirname(__name__), "app", "config", "config.json")
 os.makedirs(os.path.dirname(_config_path), exist_ok=True)
