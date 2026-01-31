@@ -4,12 +4,10 @@ import shutil
 from typing import Union
 
 import qfluentwidgets as qfw
+import qfluentwidgets.multimedia as multimedia
 from PyQt6.QtCore import Qt, QRectF, pyqtSignal, QUrl, QSize
 from PyQt6.QtWidgets import QFrame, QHBoxLayout, QLabel, QVBoxLayout, QWidget, QFileDialog, QStackedWidget
-from PyQt6.QtGui import QColor, QIcon, QPainter, QPixmap, QDesktopServices, QFont, QDragEnterEvent, QDropEvent, QMouseEvent
-
-
-from qfluentwidgets.multimedia import StandardMediaPlayBar, VideoWidget
+from PyQt6.QtGui import QColor, QIcon, QPainter, QPixmap, QDesktopServices, QFont, QDragEnterEvent, QDropEvent, QMouseEvent, QImage
 
 
 def drawIcon(icon: Union[str, QIcon, qfw.FluentIconBase], painter: QPainter, rect: QRectF, state: QIcon.State = QIcon.State.Off, **attributes) -> None:
@@ -626,6 +624,15 @@ class FileUploadArea(QFrame):
         return self.rootPath
 
 
+class ClickableWidget(QWidget):
+
+    doubleClicked = pyqtSignal()
+
+    def mouseDoubleClickEvent(self, event):
+        self.doubleClicked.emit()
+        super().mouseDoubleClickEvent(event)
+
+
 class FileDetailStackWidget(QStackedWidget):
 
     def __init__(self, parent=None) -> None:
@@ -633,113 +640,76 @@ class FileDetailStackWidget(QStackedWidget):
         self.setObjectName("fileDetailStackWidget")
         self.setStyleSheet("background-color: transparent;")
 
-        self.textEdit = qfw.TextEdit(self)
-        self.textEdit.setReadOnly(True)
+        self.textContainer = qfw.TextEdit(self)
+        self.textContainer.setReadOnly(True)
 
-        self.imageContainer = QWidget(self)
+        self.imageContainer = ClickableWidget(self)
         self.imageLayout = QVBoxLayout(self.imageContainer)
         self.imageLayout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.imageLabel = qfw.ImageLabel(self)
-        self.imageLabel.setBorderRadius(8, 8, 8, 8)
-        self.imageLayout.addWidget(self.imageLabel)
+        self.imageWrapper = qfw.ImageLabel(self.imageContainer)
+        self.imageLayout.addWidget(self.imageWrapper)
 
-        self.audioContainer = QWidget(self)
+        self.audioContainer = ClickableWidget(self)
         self.audioLayout = QVBoxLayout(self.audioContainer)
-        self.audioLayout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.audioLayout.setAlignment(Qt.AlignmentFlag.AlignBottom)
+        self.audioWrapper = multimedia.StandardMediaPlayBar(self.audioContainer)
+        self.audioWrapper.volumeButton.setFont(QFont("Segoe UI", 12))
+        self.audioWrapper.skipBackButton.setFont(QFont("Segoe UI", 12))
+        self.audioWrapper.playButton.setFont(QFont("Segoe UI", 12))
+        self.audioWrapper.skipForwardButton.setFont(QFont("Segoe UI", 12))
+        self.mediaPlayer = multimedia.MediaPlayer(self)
+        self.audioWrapper.setMediaPlayer(self.mediaPlayer)
+        self.audioLayout.addWidget(self.audioWrapper)
 
-        self.videoWidget = VideoWidget(self)
-        self.mediaPlayer = self.videoWidget.player
+        self.videoContainer = multimedia.VideoWidget(self)
+        self.videoContainer.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.mediaPlayBar = StandardMediaPlayBar(self)
-        self.audioLayout.addWidget(self.mediaPlayBar)
-        self.mediaPlayBar.setFixedWidth(600)
-
-        self.mediaPlayBar.playButton.clicked.connect(self.toggleAudioPlayState)
-        self.mediaPlayBar.progressSlider.valueChanged.connect(self.onSliderValueChanged)
-        self.mediaPlayer.positionChanged.connect(self.onAudioPositionChanged)
-        self.mediaPlayer.durationChanged.connect(self.onAudioDurationChanged)
-        self.mediaPlayer.playbackStateChanged.connect(self.onAudioStateChanged)
-
-        self.defaultInfoLabel = QLabel(self)
-        self.defaultInfoLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.defaultInfoLabel.setStyleSheet("font-size: 14px; color: #666;")
-
-        self.addWidget(self.textEdit)
+        self.addWidget(self.textContainer)
         self.addWidget(self.imageContainer)
         self.addWidget(self.audioContainer)
-        self.addWidget(self.videoWidget)
-        self.addWidget(self.defaultInfoLabel)
+        self.addWidget(self.videoContainer)
 
-    def toggleAudioPlayState(self):
-        if self.mediaPlayer.playbackState() == self.mediaPlayer.PlaybackState.PlayingState:
-            self.mediaPlayer.pause()
-        else:
-            self.mediaPlayer.play()
-
-    def onAudioStateChanged(self, state):
-        self.mediaPlayBar.playButton.setPlay(state == self.mediaPlayer.PlaybackState.PlayingState)
-
-    def onAudioPositionChanged(self, position):
-        self.mediaPlayBar.progressSlider.setValue(position)
-        try:
-            self.mediaPlayBar.updateTime(position, self.mediaPlayer.duration())
-        except AttributeError:
-            pass 
-
-    def onAudioDurationChanged(self, duration):
-        self.mediaPlayBar.progressSlider.setRange(0, duration)
-        try:
-            self.mediaPlayBar.updateTime(self.mediaPlayer.position(), duration)
-        except AttributeError:
-            pass
-
-    def onSliderValueChanged(self, value):
-        if self.mediaPlayer.position() != value:
-            self.mediaPlayer.setPosition(value)
-
-    def updateFile(self, path: str):
+    def updateFile(self, path: str) -> None:
         self.mediaPlayer.stop()
-        self.videoWidget.pause()
+        self.videoContainer.pause()
 
         if not os.path.exists(path):
-            self.defaultInfoLabel.setText("File not found.")
-            self.setCurrentIndex(4)
-            return
-
-        if os.path.isdir(path):
+            self.textContainer.setText("File not found.")
+            self.setCurrentIndex(0)
+        elif os.path.isdir(path):
             self.showDefaultInfo(path)
-            return
-
-        ext = os.path.splitext(path)[1].lower()
-
-        if ext in ['.txt', '.py', '.json', '.md', '.xml', '.log', '.c', '.cpp', '.h', '.java', '.js', '.html', '.css', '.ini', '.sh', '.bat']:
-            try:
-                with open(path, 'r', encoding='utf-8') as f:
-                    content = f.read()
-                self.textEdit.setText(content)
-                self.setCurrentIndex(0)
-            except Exception:
+        else:
+            ext = os.path.splitext(path)[1].lower()
+            source = QUrl.fromLocalFile(path)
+            if ext in ['.txt', '.py', '.json', '.md', '.js', '.html', '.css', '.sh', '.bat']:
+                try:
+                    with open(path, encoding="utf-8") as file:
+                        content = file.read()
+                    self.textContainer.setText(content)
+                    self.setCurrentIndex(0)
+                except Exception:
+                    self.showDefaultInfo(path)
+            elif ext in ['.png', '.jpg', '.jpeg', '.bmp', '.gif', '.ico', '.svg']:
+                image = QImage(path)
+                if image.width() > image.height():
+                    image = image.scaledToWidth(512) if image.width() > 512 else image
+                else:
+                    image = image.scaledToHeight(512) if image.height() > 512 else image
+                self.imageWrapper.setImage(image)
+                self.imageContainer.doubleClicked.connect(lambda: QDesktopServices.openUrl(source))
+                self.setCurrentIndex(1)
+            elif ext in ['.mp3', '.wav', '.flac', '.m4a']:
+                self.mediaPlayer.setSource(source)
+                self.audioContainer.doubleClicked.connect(lambda: QDesktopServices.openUrl(source))
+                self.setCurrentIndex(2)
+            elif ext in ['.mp4', '.avi', '.mkv', '.mov', '.wmv']:
+                self.videoContainer.setVideo(source)
+                self.setCurrentIndex(3)
+                self.videoContainer.play()
+            else:
                 self.showDefaultInfo(path)
 
-        elif ext in ['.png', '.jpg', '.jpeg', '.bmp', '.gif', '.ico', '.svg']:
-            self.imageLabel.setImage(path)
-            self.imageLabel.setScaledSize(QSize(600, 450))
-            self.setCurrentIndex(1)
-
-        elif ext in ['.mp3', '.wav', '.ogg', '.flac', '.m4a']:
-            self.mediaPlayer.setSource(QUrl.fromLocalFile(path))
-            self.setCurrentIndex(2)
-            self.mediaPlayer.play()
-
-        elif ext in ['.mp4', '.avi', '.mkv', '.mov', '.wmv']:
-            self.videoWidget.setVideo(QUrl.fromLocalFile(path))
-            self.setCurrentIndex(3)
-            self.videoWidget.play()
-
-        else:
-            self.showDefaultInfo(path)
-
-    def showDefaultInfo(self, path):
+    def showDefaultInfo(self, path: str) -> None:
         try:
             size = os.path.getsize(path)
             ctime = os.path.getctime(path)
@@ -748,5 +718,5 @@ class FileDetailStackWidget(QStackedWidget):
         except Exception:
             info = f"Path: {path}"
 
-        self.defaultInfoLabel.setText(info)
-        self.setCurrentIndex(4)
+        self.textContainer.setText(info)
+        self.setCurrentIndex(0)
