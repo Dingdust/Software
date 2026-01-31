@@ -5,9 +5,14 @@ from typing import Union
 
 import qfluentwidgets as qfw
 import qfluentwidgets.multimedia as multimedia
+
 from PyQt6.QtCore import Qt, QRectF, pyqtSignal, QUrl, QSize
 from PyQt6.QtWidgets import QFrame, QHBoxLayout, QLabel, QVBoxLayout, QWidget, QFileDialog, QStackedWidget
 from PyQt6.QtGui import QColor, QIcon, QPainter, QPixmap, QDesktopServices, QFont, QDragEnterEvent, QDropEvent, QMouseEvent, QImage
+
+from pygments import highlight
+from pygments.formatters import HtmlFormatter
+from pygments.lexers import get_lexer_for_filename
 
 
 def drawIcon(icon: Union[str, QIcon, qfw.FluentIconBase], painter: QPainter, rect: QRectF, state: QIcon.State = QIcon.State.Off, **attributes) -> None:
@@ -649,7 +654,6 @@ class FileDetailStackWidget(QStackedWidget):
         self.textWrapper.setReadOnly(True)
         self.textLayout.addWidget(self.textWrapper)
 
-
         self.imageContainer = ClickableWidget(self)
         self.imageLayout = QVBoxLayout(self.imageContainer)
         self.imageLayout.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -699,7 +703,14 @@ class FileDetailStackWidget(QStackedWidget):
                 try:
                     with open(path, encoding="utf-8") as file:
                         content = file.read()
-                    self.textWrapper.setText(content)
+
+                    lexer = get_lexer_for_filename(path)
+                    style = 'monokai' if qfw.isDarkTheme() else 'default'
+                    formatter = HtmlFormatter(style=style, noclasses=True, nobackground=True, cssstyles="line-height: 100%")
+                    html = highlight(content, lexer, formatter)
+                    self.textWrapper.setHtml(html)
+
+                    self.textContainer.doubleClicked.connect(lambda: QDesktopServices.openUrl(source))
                     self.setCurrentIndex(0)
                 except Exception:
                     self.showDefaultInfo(path)
@@ -728,9 +739,21 @@ class FileDetailStackWidget(QStackedWidget):
             size = os.path.getsize(path)
             ctime = os.path.getctime(path)
             time_str = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(ctime))
-            info = f"Path: {path}\nSize: {size} bytes\nCreated: {time_str}"
+            info = f"""
+            位置：\t{path.replace('/', '\\')}\n
+            大小：\t{size} 字节\n
+            创建时间：\t{time_str}
+            """
         except Exception:
-            info = f"Path: {path}"
+            info = f"位置：\t{path.replace('/', '\\')}"
 
         self.textWrapper.setText(info)
+
+        def openPathInExplorer(path: str) -> None:
+            try:
+                QDesktopServices.openUrl(QUrl.fromLocalFile(path))
+            except Exception:
+                pass
+
+        self.textContainer.doubleClicked.connect(lambda: openPathInExplorer(path))
         self.setCurrentIndex(0)

@@ -1,3 +1,3 @@
 import os
 
-os.environ["QT_LOGGING_RULES"] = "qt.multimedia.ffmpeg=false"
+os.environ["QT_LOGGING_RULES"] = "*.ffmpeg=false;*.ffmpeg.*=false"
