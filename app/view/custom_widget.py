@@ -640,8 +640,15 @@ class FileDetailStackWidget(QStackedWidget):
         self.setObjectName("fileDetailStackWidget")
         self.setStyleSheet("background-color: transparent;")
 
-        self.textContainer = qfw.TextEdit(self)
-        self.textContainer.setReadOnly(True)
+        self.textContainer = ClickableWidget(self)
+        self.textLayout = QVBoxLayout(self.textContainer)
+        self.textLayout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.textWrapper = qfw.TextEdit(self)
+        self.textWrapper.setContentsMargins(8, 8, 8, 8)
+        self.textWrapper.setStyleSheet("background-color: transparent;")
+        self.textWrapper.setReadOnly(True)
+        self.textLayout.addWidget(self.textWrapper)
+
 
         self.imageContainer = ClickableWidget(self)
         self.imageLayout = QVBoxLayout(self.imageContainer)
@@ -661,8 +668,15 @@ class FileDetailStackWidget(QStackedWidget):
         self.audioWrapper.setMediaPlayer(self.mediaPlayer)
         self.audioLayout.addWidget(self.audioWrapper)
 
-        self.videoContainer = multimedia.VideoWidget(self)
-        self.videoContainer.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.videoContainer = ClickableWidget(self)
+        self.videoLayout = QVBoxLayout(self.videoContainer)
+        self.videoLayout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.videoWrapper = multimedia.VideoWidget(self)
+        self.videoWrapper.playBar.volumeButton.setFont(QFont("Segoe UI", 12))
+        self.videoWrapper.playBar.skipBackButton.setFont(QFont("Segoe UI", 12))
+        self.videoWrapper.playBar.playButton.setFont(QFont("Segoe UI", 12))
+        self.videoWrapper.playBar.skipForwardButton.setFont(QFont("Segoe UI", 12))
+        self.videoLayout.addWidget(self.videoWrapper)
 
         self.addWidget(self.textContainer)
         self.addWidget(self.imageContainer)
@@ -671,10 +685,10 @@ class FileDetailStackWidget(QStackedWidget):
 
     def updateFile(self, path: str) -> None:
         self.mediaPlayer.stop()
-        self.videoContainer.pause()
+        self.videoWrapper.pause()
 
         if not os.path.exists(path):
-            self.textContainer.setText("File not found.")
+            self.textWrapper.setText("File not found.")
             self.setCurrentIndex(0)
         elif os.path.isdir(path):
             self.showDefaultInfo(path)
@@ -685,7 +699,7 @@ class FileDetailStackWidget(QStackedWidget):
                 try:
                     with open(path, encoding="utf-8") as file:
                         content = file.read()
-                    self.textContainer.setText(content)
+                    self.textWrapper.setText(content)
                     self.setCurrentIndex(0)
                 except Exception:
                     self.showDefaultInfo(path)
@@ -703,9 +717,9 @@ class FileDetailStackWidget(QStackedWidget):
                 self.audioContainer.doubleClicked.connect(lambda: QDesktopServices.openUrl(source))
                 self.setCurrentIndex(2)
             elif ext in ['.mp4', '.avi', '.mkv', '.mov', '.wmv']:
-                self.videoContainer.setVideo(source)
+                self.videoWrapper.setVideo(source)
+                self.videoContainer.doubleClicked.connect(lambda: QDesktopServices.openUrl(source))
                 self.setCurrentIndex(3)
-                self.videoContainer.play()
             else:
                 self.showDefaultInfo(path)
 
@@ -718,5 +732,5 @@ class FileDetailStackWidget(QStackedWidget):
         except Exception:
             info = f"Path: {path}"
 
-        self.textContainer.setText(info)
+        self.textWrapper.setText(info)
         self.setCurrentIndex(0)

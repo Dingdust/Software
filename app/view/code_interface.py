@@ -23,7 +23,7 @@ class CodeInterface(QWidget):
 
         self.rightContainer = QFrame(self)
         self.rightLayout = QVBoxLayout(self.rightContainer)
-        self.rightLayout.setContentsMargins(16, 16, 16, 16)
+        self.rightLayout.setContentsMargins(8, 8, 8, 8)
         self.fileDetailStackWidget = custom.FileDetailStackWidget(self.rightContainer)
         self.rightLayout.addWidget(self.fileDetailStackWidget)
         
